@@ -1,0 +1,83 @@
+/* regul_form.css */
+
+.regul-form {
+    width: 400px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #ddf8dd; /* vert clair */
+    border: 2px solid #00c853; /* vert vif */
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.regul-form label {
+    display: block;
+    margin-top: 15px;
+    font-weight: 600;
+    color: #333;
+}
+
+.regul-form input,
+.regul-form select {
+    width: 100%;
+    padding: 8px 10px;
+    margin-top: 5px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.regul-form input:focus,
+.regul-form select:focus {
+    border-color: #00c853;
+    outline: none;
+}
+
+.regul-form button {
+    margin-top: 20px;
+    background-color: #00c853;
+    color: white;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 0;
+    width: 100%;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.regul-form button:hover {
+    background-color: #009e38;
+}
+
+.regul-form .btn-voir {
+    display: inline-block;
+    margin-top: 15px;
+    background-color: #21f367;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: white;
+    font-weight: 700;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+.regul-form .btn-voir:hover {
+    background-color: #17aa59;
+}
+
+.info {
+    text-align: center;
+    font-size: 16px;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+select {
+  color: green; /* couleur par défaut */
+}

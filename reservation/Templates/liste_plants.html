@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Plants</title>
+    <link rel="stylesheet" href="{% static 'css/liste.css' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+</head>
+<body>
+<section class="top-buttons">
+  <a href="{% url 'liste_ilots' chantier.id_chantier_sylviculture_n %}" class="btn btn-success">← Retour îlot</a>
+  <a href="{% url 'ajouter_plante' ilot_id=ilot.ilo_id_n %}" class="btn btn-ajouter">Ajouter une nouvelle plante</a>
+</section>
+<section class="info-reboisement">
+    <h2>Infos Reboisement - Îlot</h2>
+    {% if chantier %}
+        <p><strong>Propriétaire :</strong> {{ chantier.nom_propietaire }}</p>
+        <p><strong>Commune :</strong> {{ chantier.id_insee }}</p> 
+        <p><strong>Nom de l'îlot :</strong> {{ ilot.ilo_nom_a }}</p>
+        <p><strong>Surface de l'îlot :</strong> {{ ilot.ilo_surface_n }} ha</p>
+    {% else %}
+        <p>Aucune information chantier disponible</p>
+    {% endif %}
+</section>
+<fieldset class="table-fieldset">
+    <legend>Plants Souhaitées</legend>
+<table>
+    <thead>
+        <tr>
+            <th>Essence</th>
+            <th>Prevenance</th>
+            <th>Nbrs plants(après régul) </th>
+            <th>Compagne</th>
+            <th>Regarnis</th>
+            <th>Stade</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+ {% for item in plants_with_totals %}
+<tr>
+
+    <td>{{ item.plant.id_essence_n }}</td>
+    <td>{{ item.plant.prv_id_n }}</td>
+    <td>{{ item.total_regule }}</td>
+    <td>{{ item.plant.ps_campagne_n }}</td>
+    <td>{{ item.plant.ps_regarnis_b|yesno:"Oui,Non" }}</td>
+    <td>{{ item.plant.sts_id_n }}</td>
+    <td>
+        <a class="btn btn-voir" href="{% url 'voir_regul' item.plant.ps_id_n %}">Voir  réguls</a>
+        <a class = "btn btn-voir" href ="{% url 'liste_soins_plants' item.plant.ps_id_n%}">  voir soins plants </a>
+        <a class = "btn btn-ajouter"href="{% url 'ajouter_soin_plant' ilot_id=ilot.ilo_id_n ps_id=item.plant.ps_id_n %}">Ajouter un soin</a>
+        {% if item.plant.sts_id_n_id == 2 %}
+        <a class="btn btn-ajouter" href="{% url 'voir_regul' item.plant.ps_id_n %}">
+            Voir régulations
+        </a>
+        <a class="btn btn-ajouter" href="{% url 'reguler_plant' ilot_id=ilot.ilo_id_n ps_id=item.plant.ps_id_n %}">
+            Ajouter réguls
+        </a>
+        {% endif %}
+        <a class="btn btn-danger" href="{% url 'choix_annuler_reporter' item.plant.ps_id_n %}">
+            Annuler / Reporter
+        </a>
+    </td>
+</tr>
+{% endfor %}
+    </tbody>
+</table>
+
+</fieldset>
+
+</body>
+</html>

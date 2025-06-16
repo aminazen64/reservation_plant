@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Ajoutersoins  {{ plant.ps_id_n }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <link rel="stylesheet" href="{% static 'css/ajouter.css' %}"> <!-- Si Django -->
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+
+</head>
+<body>
+    <center><h2>Ajouter soins pour plant: {{ plant.id_essence_n }}</h2></center>
+<form method="post">
+ {% csrf_token %}
+  <p>
+    {{ form.soi_quantite_n.label_tag }}<br>
+    {{ form.soi_quantite_n }}
+  </p>
+  <p>
+    {{ form.soins_niv3_n.label_tag }}<br>
+    {{ form.soins_niv3_n }}
+  </p>
+  <p>
+    {{ form.soins_niv4_n.label_tag }}<br>
+    {{ form.soins_niv4_n }}
+  </p>
+  <p>
+    {{ form.soins_niv5_n.label_tag }}<br>
+    {{ form.soins_niv5_n }}
+  </p>
+  <p>
+    {{ form.id_typeope_n.label_tag }}<br>
+    {{ form.id_typeope_n }}
+  </p>
+  <p>
+    {{ form.id_unite_n.label_tag }}<br>
+    {{ form.id_unite_n }}
+  </p>
+  <p>
+    {{ form.sol_id_n.label_tag }}<br>
+    {{ form.sol_id_n }}
+  </p>
+  <button type="submit">Valider</button>
+</form>
+<script>
+    const getNiv4SoinsUrl = "{% url 'get_niv4_by_niv3_soins' %}";
+    const getNiv5SoinsUrl = "{% url 'get_niv5_by_niv4_soins' %}";
+    const getOpsSoinsUrl = "{% url 'get_ops_by_niv5_soins' %}";
+</script>
+    <script src="{% static 'js/ajouter.js' %}"></script> <!-- Si Django -->
+</body>
+</html>

@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Reboisement</title>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!-- Ton CSS -->
+    <link rel="stylesheet" href="{% static 'css/ajouter.css' %}"> 
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+
+
+</head>
+<body>
+
+    <!-- FORMULAIRE -->
+    <form method="post">
+        {% csrf_token %}
+        <h3>Reboisement</h3>
+{{ form.chantier_virtuel.label_tag }}
+  {{ form.chantier_virtuel }}
+        {{ chantier_form }}
+
+        <button type="submit">Enregistrer</button>
+    </form>
+
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+
+<script>
+
+    const getChantierDetailsUrl = "{% url 'get_chantier_details' %}";
+</script>
+    <script src="{% static 'js/ajouter.js' %}"></script> 
+</body>
+</html>

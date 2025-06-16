@@ -1,0 +1,184 @@
+/* ====== BASE ====== */
+body {
+    background-color: #f4f6f8;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+}
+
+/* ====== TITRES ====== */
+h1, h2 {
+    margin-bottom: 20px;
+    color: #008a17;
+    font-weight: bold;
+}
+
+/* ====== SECTIONS ====== */
+.top-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+/* ====== BOUTONS ====== */
+.btn {
+    display: inline-block;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 6px;
+    text-decoration: none;
+    text-align: center;
+    color: white;
+    transition: background-color 0.3s ease-in-out;
+    cursor: pointer;
+    border: none;
+    white-space: nowrap;
+    margin-bottom: 15px;
+}
+
+.btn-ajouter {
+    background-color: #748d06;
+}
+.btn-ajouter:hover {
+    background-color: #218838;
+}
+
+.btn-success {
+    background-color: #0b8600;
+}
+.btn-success:hover {
+    background-color: #027c53;
+}
+
+.btn-voir {
+    background-color: #00a745;
+}
+.btn-voir:hover {
+    background-color: #00522c;
+}
+
+/* ====== INFO REBOISEMENT ====== */
+.info-reboisement {
+    position: relative;
+    right: 20%;
+    background-color: #fbfffb;
+    border-left: 4px solid #224e24;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 6px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.info-reboisement p {
+    margin: 6px 0;
+    font-size: 15px;
+    
+}
+
+/* ====== TABLEAU ====== */
+.table-fieldset {
+    border: 1px solid #ccc;
+    background-color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.05);
+    margin: 0 auto 30px auto;
+}
+
+.table-fieldset legend {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #333;
+    padding: 0 10px;
+}
+
+/* ====== TABLE STYLES ====== */
+table {
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+thead {
+    background-color: #008a17;
+    color: white;
+    max-width: 1000px;
+}
+
+th, td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+
+tbody tr:hover {
+    background-color: #f1f8e9;
+}
+
+/* Responsive pour petits écrans */
+@media (max-width: 768px) {
+    .top-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    thead {
+        display: none;
+    }
+
+    tr {
+        margin-bottom: 15px;
+        border-bottom: 2px solid #eee;
+    }
+
+    td {
+        position: relative;
+        padding-left: 50%;
+    }
+
+    td::before {
+        position: absolute;
+        top: 12px;
+        left: 16px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: bold;
+        color: #555;
+    }
+
+    td:nth-of-type(1)::before { content: "Essence"; }
+    td:nth-of-type(2)::before { content: "Prevenance"; }
+    td:nth-of-type(3)::before { content: "Nbrs plants"; }
+    td:nth-of-type(4)::before { content: "Compagne"; }
+    td:nth-of-type(5)::before { content: "Regarnis"; }
+    td:nth-of-type(6)::before { content: "Stade"; }
+    td:nth-of-type(7)::before { content: "Actions"; }
+}
+
+.reg-plus{
+
+    color: #008a17;
+    font-size: 18px;
+    margin-right: 10px;
+}
+.reg-minus{
+    color: red;
+    font-size: 18px;
+    margin-left: 10px;
+}

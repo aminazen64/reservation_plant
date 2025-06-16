@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Travaux du chantier</title>
+        <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #e8f5e9; /* vert clair */
+            color: #2e7d32; /* vert foncé */
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #1b5e20;
+            border-bottom: 2px solid #a5d6a7;
+            padding-bottom: 10px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: #c8e6c9;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 6px solid #388e3c;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-travaux {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #66bb6a;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        a:hover {
+            background-color: #388e3c;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Travaux du chantier : {{ chantier }}</h2>
+
+    {% if travaux %}
+        <ul>
+            {% for t in travaux %}
+                <li>
+                    <strong>Année :</strong> {{ t.annee_n }}<br>
+                    <strong>Travail :</strong> {{ t.travaux_niv3_n }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="no-travaux">Aucun travail enregistré pour ce chantier.</p>
+    {% endif %}
+
+    <a href="{% url 'liste_chantiers' %}">← Retour à la liste des chantiers</a>
+
+</body>
+</html>
+

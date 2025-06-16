@@ -1,0 +1,16 @@
+.site-header {
+    padding: 16px 32px;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.logo {
+    height: 50px; /* ou adapte à ta taille */
+    object-fit: contain;
+}
+
+.logo-link {
+    display: inline-block;
+}

@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier Chantier</title>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!-- Ton CSS -->
+    <link rel="stylesheet" href="{% static 'css/ajouter.css' %}"> 
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+</head>
+<body>
+
+<h2>Modifier le chantier</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Enregistrer les modifications</button>
+    <a href="{% url 'liste_chantiers' %}">Annuler</a>
+    {% if chantier.etat_id_n != 4 %}
+    <button type="button" id="btn-annuler-reboisement">Annuler</button>
+    {% endif %}
+<!-- ✅ jQuery DOIT venir AVANT ton script -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+
+    const getChantierDetailsUrl = "{% url 'get_chantier_details' %}";
+    const annulerReboisementUrl = "{% url 'annuler_reboisement' chantier.id_chantier_sylviculture_n %}";
+</script>
+<!-- Facultatif : select2 (si utilisé) -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- Ton JS -->
+<script src="{% static 'js/ajouter.js' %}"></script>
+
+</body>
+</html>

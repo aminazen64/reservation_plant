@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+        <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+
+    <meta charset="UTF-8">
+    <title>Liste des soins des plants</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #e8f5e9; /* vert clair */
+            color: #2e7d32; /* vert foncé */
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #1b5e20;
+            border-bottom: 2px solid #a5d6a7;
+            padding-bottom: 10px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: #c8e6c9;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 6px solid #388e3c;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-soins {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #66bb6a;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        a:hover {
+            background-color: #388e3c;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Liste des soins des plants : {{ plant }}</h2>
+
+    {% if soins %}
+        <ul>
+            {% for soin in soins %}
+                <li>                    
+                    <strong>Soins :</strong> {{ soin.id_typeope_n }}<br>
+                    <strong>Quantité :</strong> {{ soin.soi_quantite_n }}
+                    <strong>Lieu: </strong> {{soin.sol_id_n}}
+                    <strong>Unité : </strong> {{soin.id_unite_n}}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="no-soins">Aucun soin enregistré pour ce plant.</p>
+    {% endif %}
+
+    <a href="{% url 'liste_plants' %}">← Retour à la liste des plants</a>
+
+</body>
+</html>

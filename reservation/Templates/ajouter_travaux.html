@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Ajouter travaux pour chantier {{ chantier.type }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <link rel="stylesheet" href="{% static 'css/ajouter.css' %}"> <!-- Si Django -->
+        <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+
+</head>
+<body>
+    <h2>Ajouter travaux pour chantier : {{ chantier.type }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ travaux_form.as_p }}
+        <button type="submit">Enregistrer les travaux</button>
+    </form>
+    <script>
+    const getNiv4Url = "{% url 'get_niv4_by_niv3' %}";
+    const getNiv5Url = "{% url 'get_niv5_by_niv4' %}";
+    const getOpsUrl = "{% url 'get_ops_by_niv5' %}";
+    </script>
+    <script src="{% static 'js/ajouter.js' %}"></script> <!-- Si Django -->
+</body>
+</html>

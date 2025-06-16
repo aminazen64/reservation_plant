@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulaire Chantier</title>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!-- Ton CSS -->
+<link rel="stylesheet" href="{% static 'css/ajouter.css' %}">
+</head>
+<body>
+    <div id="loading-overlay" style="display:none;">
+      <div class="loader"></div>
+      <span class="loader-text">Chargement...</span>
+    </div>
+      <center><h2>Ajouter une Plante Souhaitée</h2></center>
+    <form method="post">
+      {% csrf_token %}
+
+      {{ form.as_p }}
+      <button type="submit">Enregistrer</button>
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <script src="{% static 'js/ajouter.js' %}"></script> 
+<script>
+$(document).ready(function () {
+    const pourcentageInput = $('#id_ps_prc_essence_n');
+    const outputField = $('#id_nbre_plants_calcule');
+    const souhaitesField = $('#id_ps_nbr_plants_souhaites_n');
+    const espaceEntreLigne = parseFloat('{{ ilot.ilo_espace_entreligne_n|default:0 }}');
+    const espaceSurLigne = parseFloat('{{ ilot.ilo_espace_surligne_n|default:0 }}');
+    const surface = parseFloat('{{ ilot.ilo_surface_n|default:0 }}');
+    const prcNonPlantable = parseFloat('{{ ilot.ilo_prc_nonplantable_n|default:0 }}');
+
+    function calculerNombrePlants() {
+        const prcEssence = parseFloat(pourcentageInput.val()) || 0;
+
+        if (espaceEntreLigne > 0 && espaceSurLigne > 0 && surface > 0) {
+            const densite = 10000 / (espaceEntreLigne * espaceSurLigne);
+            const densiteParEssence = densite * prcEssence / 100;
+            const surfacePlantable = surface * (100 - prcNonPlantable / 100);
+            const total = Math.round(densiteParEssence * surfacePlantable);
+            outputField.val(total);
+        } else {
+            outputField.val('');
+        }
+    }
+
+    pourcentageInput.on('input', calculerNombrePlants);
+
+    // le bouton Copier
+    const boutonCopie = $('<button type="button" class="btn btn-sm btn-secondary mt-2">Copier</button>');
+    boutonCopie.on('click', function () {
+        const val = outputField.val();
+        if (val) {
+            souhaitesField.val(val);
+        }
+    });
+    outputField.parent().append(boutonCopie);
+});
+</script>
+</body>
+</html>
+

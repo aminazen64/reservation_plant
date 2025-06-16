@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Régulations</title>
+    <link rel="stylesheet" href="{% static 'css/liste.css' %}">
+        <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+
+</head>
+<body>
+<a href="{% url 'liste_plants_pour_ilot' ilot.ilo_id_n %}" class="btn btn-success" > ← retour plants souhaité</a> 
+
+<h1>Régulations pour le plant : {{ plant.id_essence_n }}</h1>
+{% if plant.ps_nbr_plants_souhaites_n is None %}
+<p class="info">Nombre plants  souhaité : <strong>0</strong></p>
+{% else %}
+<p class="info">Nombre plants  souhaité : <strong>{{ plant.ps_nbr_plants_souhaites_n }}</strong></p>
+{% endif %}
+
+{% if nouveau_total is not None %}
+<p class="info">Nouveau total estimé après régulation : 
+    <strong style="color: {% if nouveau_total > plant.ps_nbr_plants_souhaites_n %}green{% else %}red{% endif %};">
+        {{ nouveau_total }}
+    </strong>
+</p>
+{% endif %}
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Régulation</th>
+            <th>Motiif</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for regul in reguls %}
+        <tr>
+            <td>{{ regul.reg_date_d|date:"d/m/Y H:i" }}</td>
+            <td>
+                {% if regul.reg_signe_b %}
+                    <span class="reg-plus">+{{ regul.reg_nbr_plants_regul_n }}</span>
+                {% else %}
+                    <span class="reg-minus">-{{ regul.reg_nbr_plants_regul_n }}</span>
+                {% endif %}
+            </td>
+            <td>{{ regul.reg_motif_a }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3" class="empty-message">
+                Aucune régulation enregistrée.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>
