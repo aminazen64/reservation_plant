@@ -3,10 +3,7 @@
 <html>
 <head>
     <title>Îlots du chantier</title>
-        <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
-
     <style>
-
 body {
     background: #f4f6f8;
     font-family: 'Roboto', Arial, sans-serif;
@@ -15,31 +12,30 @@ body {
 }
 
 .container {
-    max-width: 1200px; /* Réduit la largeur max */
+    max-width: 1200px; 
     margin: 40px auto;
     background: #fff;
     border-radius: 16px;
     box-shadow: 0 4px 24px rgba(60, 72, 88, 0.12);
-    padding: 32px 40px; /* Réduit le padding */
+    padding: 32px 40px; 
 }
 
 h2 {
     text-align: center;
     color: #008a17;
-    margin-bottom: 24px; /* Réduit la marge */
+    margin-bottom: 24px;
     font-weight: 700;
     letter-spacing: 1px;
     font-size: 2rem;
 }
 
-/* Style de la table */
-.table-wrapper {
-    overflow-x: auto;
-    margin-top: 16px;
+.table-wrapper { 
+    overflow-x: auto; 
+    margin-top: 16px; 
 }
 
 table {
-    width: 100%; /* Utilise toute la largeur du conteneur */
+    width: 100%; 
     margin: auto;
     border-collapse: collapse;
     background-color: #ffffff;
@@ -70,7 +66,7 @@ tr:hover {
     background-color: #f5f5f5;
 }
 
-/* Style pour les liens et boutons */
+
 td a, .btn-primary, .btn-success.btn-sm {
     color: #fff;
     background-color: #28a745;
@@ -90,7 +86,7 @@ td a:hover, .btn-primary:hover, .btn-success.btn-sm:hover {
     color: #fff;
 }
 
-/* Style pour le contenu des cellules */
+
 td .cell-content {
     display: block;
     max-height: 4.5em;
@@ -110,25 +106,24 @@ td .cell-content.expand {
     box-shadow: 0 2px 8px rgba(60, 72, 88, 0.12);
 }
 
-/* Message vide */
+
 td[colspan="7"] {
     text-align: center;
     font-style: italic;
     color: #999;
 }
 
-/* Style pour le cadre de récapitulatif */
 .chantier-info {
     background: #f1f8e9;
-    padding: 12px; /* Réduit le padding */
+    padding: 12px; 
     border-radius: 8px;
-    margin-bottom: 16px; /* Réduit la marge */
+    margin-bottom: 16px; 
     border-left: 4px solid #388e3c;
-    font-size: 0.9rem; /* Réduit la taille de la police */
+    font-size: 0.9rem; 
 }
 
 .chantier-info p {
-    margin: 6px 0; /* Réduit la marge */
+    margin: 6px 0; 
     color: #333;
 }
 
@@ -136,10 +131,10 @@ td[colspan="7"] {
     color: #388e3c;
 }
 
-/* Style pour le lien de retour */
+
 .back-link {
     display: inline-block;
-    margin-bottom: 16px; /* Réduit la marge */
+    margin-bottom: 16px; 
     color: #388e3c;
     text-decoration: none;
     font-weight: 500;
@@ -149,7 +144,6 @@ td[colspan="7"] {
     text-decoration: underline;
 }
 
-/* Style pour les boutons */
 .btn {
     display: inline-block;
     padding: 8px 14px;
@@ -179,25 +173,81 @@ td[colspan="7"] {
 .btn-secondary:hover {
     background-color: #616161;
 }
+td a, .btn-success.btn-sm {
+    color: #fff;
+    background-color: #28a745;
+    text-decoration: none;
+    margin-right: 14px;        
+    margin-bottom: 8px;        
+    font-weight: bold;
+    border-radius: 8px;        
+    padding: 12px 22px;         
+    font-size: 15px;
+    display: inline-block;
+    border: none;
+    box-shadow: 0 2px 8px rgba(60, 72, 88, 0.14); 
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+td a:hover, .btn-success.btn-sm:hover {
+    background-color: #218838;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(60, 72, 88, 0.18);
+    transform: translateY(-2px) scale(1.04);        
+}
+.btn, .btn-primary, .btn-success.btn-sm {
+    color: #fff;
+    background-color: #28a745; 
+    text-decoration: none;
+    margin-right: 14px;
+    margin-bottom: 8px;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 12px 22px;
+    font-size: 15px;
+    display: inline-block;
+    border: none;
+    box-shadow: 0 2px 8px rgba(60, 72, 88, 0.14);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.btn-primary {
+    background-color: #388e3c;
+}
+.btn-success, .btn-success.btn-sm {
+    background-color: #28a745;
+}
+
+.btn:hover, .btn-primary:hover, .btn-success.btn-sm:hover {
+    background-color: #218838;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(60, 72, 88, 0.18);
+    transform: translateY(-2px) scale(1.04);
+}
     </style>
 </head>
 <body>
     <div class="container">
         <a href="{% url 'liste_chantiers' %}" class="back-link">← Retour à la liste des reboisements</a>
-       
+        
         <h2>Îlots du reboisement</h2>
-       
+        
         <div class="chantier-info">
-            <p><strong>Propriétaire:</strong> {{ chantier.nom_propietaire }}</p>
-            <p><strong>Surface:</strong> {{ chantier.surface }}</p>
-            <p><strong>Agence:</strong> {{ chantier.agence }}</p>
-            <p><strong>Bureau:</strong> {{ chantier.bureau }}</p>
-            <p><strong>Secteur:</strong> {{ chantier.secteur }}</p>
-            
+            <p><strong>Propriétaire:</strong> {{ chantier.nomproprietaire_a }}</p>
+            <p><strong>Surface:</strong> {{ chantier.cs_surface_indicative_n }}</p>
+            <p><strong>Agence:</strong> {{ chantier.cs_agence_a }}</p>
+            <p><strong>Bureau:</strong> {{ chantier.id_bureau_n }}</p>
+            <p><strong>Secteur:</strong> {{ chantier.id_secteur_n }}</p>
         </div>
-       
-  
-       
+        
+        <div style="text-align: right; margin-bottom: 16px;">
+            <a href="{% url 'ajouter_ilot' chantier.cs_id_n %}" class="btn btn-primary">Ajouter un îlot</a>
+        </div>
+        
         <table>
             <thead>
                 <tr>
@@ -206,24 +256,23 @@ td[colspan="7"] {
                     <th>Interligne</th>
                     <th>Espacement <br> Sur la ligne</th>
                     <th>Surface <br> Plantable</th>
-                                        <th>Stade ilots</th>
-
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>  
-               
+                
                 {% for ilot in ilots_avec_calcul %}  
-                <tr>
+                <tr> 
                     <td>{{ ilot.ilot.ilo_surface_n|default_if_none:"" }}</td>  
                     <td>{{ ilot.ilot.ilo_prc_nonplantable_n|default_if_none:"" }}</td>  
                     <td>{{ ilot.ilot.ilo_espace_entreligne_n|default_if_none:"" }}</td>  
                     <td>{{ ilot.ilot.ilo_espace_surligne_n|default_if_none:"" }}</td>  
                     <td>{{ ilot.calcul_non_plantable|default_if_none:"" }}</td>
-                    <td>{{ ilot.ilot.eta_id_n|default_if_none:"" }}</td>
 
 
                     <td>  
+                        <a href="{% url 'modifier_ilot' ilot.ilot.ilo_id_n %}" class="btn btn-primary btn-sm">Modifier</a> 
+                        <a href="{% url 'liste_travaux_ilot' ilot.ilot.ilo_id_n %}" class="btn btn-success btn-sm">Voir Travaux</a>  
                         <a href="{% url 'liste_plants_pour_ilot' ilot.ilot.ilo_id_n %}" class="btn btn-primary btn-sm">plants souhaité</a>  
 
                     </td>  
@@ -238,3 +287,4 @@ td[colspan="7"] {
     </div>
 </body>
 </html>
+

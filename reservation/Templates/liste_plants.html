@@ -9,14 +9,15 @@
 </head>
 <body>
 <section class="top-buttons">
-  <a href="{% url 'liste_ilots' chantier.id_chantier_sylviculture_n %}" class="btn btn-success">← Retour îlot</a>
+    <a href="{% url 'liste_ilots_chantier' chantier.cs_id_n %}" class="back-link">← Retour à la liste des îlots</a>
   <a href="{% url 'ajouter_plante' ilot_id=ilot.ilo_id_n %}" class="btn btn-ajouter">Ajouter une nouvelle plante</a>
+
 </section>
 <section class="info-reboisement">
     <h2>Infos Reboisement - Îlot</h2>
     {% if chantier %}
-        <p><strong>Propriétaire :</strong> {{ chantier.nom_propietaire }}</p>
-        <p><strong>Commune :</strong> {{ chantier.id_insee }}</p> 
+        <p><strong>Propriétaire :</strong> {{ chantier.nomproprietaire_a }}</p>
+        <p><strong>Commune :</strong> {{ chantier.id_insee_n }}</p> 
         <p><strong>Nom de l'îlot :</strong> {{ ilot.ilo_nom_a }}</p>
         <p><strong>Surface de l'îlot :</strong> {{ ilot.ilo_surface_n }} ha</p>
     {% else %}
@@ -50,16 +51,12 @@
     <td>
         <a class="btn btn-voir" href="{% url 'voir_regul' item.plant.ps_id_n %}">Voir  réguls</a>
         <a class = "btn btn-voir" href ="{% url 'liste_soins_plants' item.plant.ps_id_n%}">  voir soins plants </a>
-        <a class = "btn btn-ajouter"href="{% url 'ajouter_soin_plant' ilot_id=ilot.ilo_id_n ps_id=item.plant.ps_id_n %}">Ajouter un soin</a>
-        {% if item.plant.sts_id_n_id == 2 %}
-        <a class="btn btn-ajouter" href="{% url 'voir_regul' item.plant.ps_id_n %}">
-            Voir régulations
-        </a>
+        {% if item.plant.sts_id_n_id == 2  and role == 0 %}
         <a class="btn btn-ajouter" href="{% url 'reguler_plant' ilot_id=ilot.ilo_id_n ps_id=item.plant.ps_id_n %}">
             Ajouter réguls
         </a>
         {% endif %}
-        <a class="btn btn-danger" href="{% url 'choix_annuler_reporter' item.plant.ps_id_n %}">
+        <a class="btn btn-danger" href="{% url 'choix_annuler_reporter' ilot.ilo_id_n item.plant.ps_id_n %}">
             Annuler / Reporter
         </a>
     </td>

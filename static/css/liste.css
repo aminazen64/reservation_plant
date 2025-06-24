@@ -14,6 +14,13 @@ h1, h2 {
     font-weight: bold;
 }
 
+.back-link {
+    display: inline-block;
+    margin-bottom: 16px; 
+    color: #388e3c;
+    text-decoration: none;
+    font-weight: 500;
+}
 /* ====== SECTIONS ====== */
 .top-buttons {
     display: flex;
@@ -181,4 +188,12 @@ tbody tr:hover {
     color: red;
     font-size: 18px;
     margin-left: 10px;
+}
+
+.btn-danger {
+    background-color: #a5131b;
+}
+
+.btn-danger:hover {
+    background-color: #dd1f28;
 }

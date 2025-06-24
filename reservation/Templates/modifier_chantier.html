@@ -18,16 +18,16 @@
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Enregistrer les modifications</button>
-    <a href="{% url 'liste_chantiers' %}">Annuler</a>
+    <a  href="{% url 'liste_chantiers' %}">Annuler</a>
     {% if chantier.etat_id_n != 4 %}
-    <button type="button" id="btn-annuler-reboisement">Annuler</button>
+    <button type="button" id="btn-annuler-reboisement">Annuler le Reboisement</button>
     {% endif %}
 <!-- ✅ jQuery DOIT venir AVANT ton script -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 
     const getChantierDetailsUrl = "{% url 'get_chantier_details' %}";
-    const annulerReboisementUrl = "{% url 'annuler_reboisement' chantier.id_chantier_sylviculture_n %}";
+    const annulerReboisementUrl = "{% url 'annuler_reboisement' chantier.cs_id_n %}";
 </script>
 <!-- Facultatif : select2 (si utilisé) -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

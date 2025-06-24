@@ -6,48 +6,48 @@ $(document).ready(function () {
     $('select').select2({ width: '100%' });
 
     // Niveau 3 → Niveau 4
-    $('#id_travaux_niv3_n').on('change', function () {
+    $('#id_niv3').on('change', function () {
         const niv3Id = $(this).val();
         if (!niv3Id) return;
 
         $.get(getNiv4Url, { niv3_id: niv3Id }, function (data) {
-            $('#id_travaux_niv4_n').empty().append('<option value="">---------</option>');
-            $('#id_travaux_niv5_n, #id_type_operation_n').empty().append('<option value="">---------</option>');
+            $('#id_niv4').empty().append('<option value="">---------</option>');
+            $('#id_niv5, #id_typeope').empty().append('<option value="">---------</option>');
 
             data.forEach(function (item) {
-                $('#id_travaux_niv4_n').append(new Option(item.nv4_lib_a, item.nv4_codnv4_n));
+                $('#id_niv4').append(new Option(item.nv4_lib_a, item.nv4_codnv4_n));
             });
 
-            $('#id_travaux_niv4_n').trigger('change');
+            $('#id_niv5').trigger('change');
         });
     });
 
     // Niveau 4 → Niveau 5
-    $('#id_travaux_niv4_n').on('change', function () {
+    $('#id_niv4').on('change', function () {
         const niv4Id = $(this).val();
         if (!niv4Id) return;
 
         $.get(getNiv5Url, { niv4_id: niv4Id }, function (data) {
-            $('#id_travaux_niv5_n').empty().append('<option value="">---------</option>');
-            $('#id_type_operation_n').empty().append('<option value="">---------</option>');
+            $('#id_niv5').empty().append('<option value="">---------</option>');
+            $('#id_typeope').empty().append('<option value="">---------</option>');
 
             data.forEach(function (item) {
-                $('#id_travaux_niv5_n').append(new Option(item.nv5_lib_a, item.nv5_codnv5_n));
+                $('#id_niv5').append(new Option(item.nv5_lib_a, item.nv5_codnv5_n));
             });
 
-            $('#id_travaux_niv5_n').trigger('change');
+            $('#id_niv5').trigger('change');
         });
     });
 
     // Niveau 5 → Type opération
-    $('#id_travaux_niv5_n').on('change', function () {
+    $('#id_niv5').on('change', function () {
         const niv5Id = $(this).val();
         if (!niv5Id) return;
 
         $.get(getOpsUrl, { niv5_id: niv5Id }, function (data) {
-            $('#id_type_operation_n').empty().append('<option value="">---------</option>');
+            $('#id_typeope').empty().append('<option value="">---------</option>');
             data.forEach(function (item) {
-                $('#id_type_operation_n').append(new Option(item.typ_libope_a, item.typ_codope_n));
+                $('#id_typeope').append(new Option(item.typ_libope_a, item.typ_codope_n));
             });
         });
     });
@@ -219,10 +219,10 @@ $('#id_soins_niv5_n').on('change', function () {
     });
 });
 
-       
-  document.querySelector('input[name="etat_id_n"][value="2"]').disabled = true;
-  document.querySelector('input[name="etat_id_n"][value="4"]').disabled = true;
-
+if (document.querySelector('input[name="etat_id_n"]')) {
+    document.querySelector('input[name="etat_id_n"][value="2"]').disabled = true;
+    document.querySelector('input[name="etat_id_n"][value="4"]').disabled = true;
+}
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -242,7 +242,7 @@ function getCookie(name) {
 // ✅ On définit bien la variable avant usage
 const csrftoken = getCookie('csrftoken');
 
-        $('#btn-annuler-reboisement').click(function() {
+         $('#btn-annuler-reboisement').click(function() {
             if (confirm("Êtes-vous sûr de vouloir annuler ce reboisement ?")) {
                 fetch(annulerReboisementUrl, {
                     method: "POST",
@@ -272,4 +272,8 @@ const csrftoken = getCookie('csrftoken');
 
             }
         });
+
+
+
+        
 });

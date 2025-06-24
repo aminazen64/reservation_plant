@@ -1,54 +1,695 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Formulaire Chantier</title>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background: #f4f6f8;
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(60, 72, 88, 0.12);
+            padding: 32px 40px 40px 40px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #008a17;
+            margin-bottom: 32px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-size: 2rem;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .filter-block {
+            background: #f9fbe7;
+            border-radius: 12px;
+            padding: 18px 16px 10px 16px;
+            box-shadow: 0 1px 4px rgba(60, 72, 88, 0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border: 1.5px solid #c5e1a5;
+        }
+
+        .filter-block-title {
+            font-weight: 600;
+            color: #008a17;
+            margin-bottom: 8px;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            margin-bottom: 4px;
+            font-weight: 500;
+            color: #388e3c;
+            font-size: 15px;
+        }
+
+        select, input.form-control {
+            min-width: 100px;
+            border-radius: 8px;
+            border: 1.5px solid #81c784;
+            background: #fff;
+            color: #388e3c;
+            font-size: 16px;
+            padding: 8px 10px;
+            height: 40px;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+            margin-bottom: 6px;
+        }
+
+        select:focus, input.form-control:focus {
+            border-color: #008a17;
+            outline: none;
+            background: #fffde7;
+        }
+
+        .select2-container--default .select2-selection--single {
+            border-radius: 8px;
+            padding: 0 10px;
+            height: 40px;
+            border: 1.5px solid #81c784;
+            background: #fff;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 38px;
+            font-size: 16px;
+            color: #388e3c;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 38px;
+        }
+
+        @media (max-width: 1100px) {
+            .filter-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 700px) {
+            .filter-grid { grid-template-columns: 1fr; }
+            .container { padding: 16px 4px; }
+        }
 
 
-    <!-- Ton CSS -->
-    <link rel="stylesheet" href="{% static 'css/liste.css' %}"> <!-- Si Django -->
+        .table-wrapper { 
+            overflow-x: auto; 
+            margin-top: 16px; 
+        }
 
+        table {
+            width: 100%;
+            margin: auto;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        thead {
+            background-color: #008a17;
+            color: white;
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            background-color: #008a17;
+            color: white;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+
+        td a, .btn-success.btn-sm {
+            color: #fff;
+            background-color: #28a745;
+            text-decoration: none;
+            margin-right: 10px;
+            font-weight: bold;
+            border-radius: 4px;
+            padding: 8px 14px;
+            font-size: 14px;
+            display: inline-block;
+            border: none;
+            transition: background 0.2s;
+        }
+
+        td a:hover, .btn-success.btn-sm:hover {
+            background-color: #218838;
+            color: #fff;
+        }
+
+        .text-muted {
+            color: #aaa;
+            font-style: italic;
+        }
+
+        td .cell-content {
+            display: block;
+            max-height: 4.5em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: pre-line;
+            cursor: pointer;
+        }
+
+        td .cell-content.expand {
+            max-height: none;
+            white-space: pre-line;
+            overflow: visible;
+            background: #f1f8e9;
+            z-index: 10;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(60, 72, 88, 0.12);
+        }
+
+
+        td[colspan="9"] {
+            text-align: center;
+            font-style: italic;
+            color: #999;
+        }
+
+
+        .loader-text {
+            color: #388e3c;
+            font-weight: 600;
+            font-size: 18px;
+            letter-spacing: 1px;
+        } 
+
+        fieldset {  
+            border: 1px solid #c5e1a5;  
+            border-radius: 12px;  
+            margin-bottom: 20px;  
+            padding: 10px;  
+        }  
+
+        legend {  
+            color: #008a17;  
+            font-size: 1.2em;  
+            font-weight: bold;  
+            padding: 0 10px;  
+            border-radius: 5px;  
+        }
+
+  
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9fbe7;
+            border-radius: 8px;
+            border: 1px solid #c5e1a5;
+        }
+
+        .pagination-info {
+            color: #388e3c;
+            font-weight: 500;
+        }
+
+        .per-page-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .per-page-control label {
+            color: #388e3c;
+            font-weight: 500;
+        }
+
+        .per-page-control select {
+            width: auto;
+            min-width: 80px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .page-link {
+            padding: 8px 12px;
+            border: 1px solid #81c784;
+            border-radius: 4px;
+            color: #388e3c;
+            text-decoration: none;
+            background: #fff;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .page-link:hover {
+            background: #c8e6c9;
+            border-color: #008a17;
+            color: #008a17;
+        }
+
+        .page-link.current {
+            background: #008a17;
+            color: white;
+            border-color: #008a17;
+        }
+
+        .page-link.disabled {
+            background: #f5f5f5;
+            color: #ccc;
+            border-color: #ddd;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 600px) {
+            .pagination-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .pagination {
+                gap: 4px;
+            }
+            .page-link {
+                padding: 6px 8px;
+                font-size: 14px;
+            }
+        }
+        td a, .btn-success.btn-sm {
+    color: #fff;
+    background-color: #28a745;
+    text-decoration: none;
+    margin-right: 14px;    
+    margin-bottom: 8px;         
+    font-weight: bold;
+    border-radius: 8px;        
+    padding: 12px 22px;         
+    font-size: 15px;
+    display: inline-block;
+    border: none;
+    box-shadow: 0 2px 8px rgba(60, 72, 88, 0.14); 
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+td a:hover, .btn-success.btn-sm:hover {
+    background-color: #218838;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(60, 72, 88, 0.18);
+    transform: translateY(-2px) scale(1.04);       
+}
+</style>
 </head>
 <body>
-      <h2>liste chantiers</h2>
-      <a  href="{% url 'ajouter_chantier' %}">Ajouter un chantier</a>
-<table border="1">
-    <thead>
-        <tr>
-            <th>Type</th>
-            <th>Commune</th>
-            <th>Surface</th>
-            <th>Société</th>
-            <th>Important</th>
-            <th>stade reboisement</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for c in chantiers %}
-        <tr>
-            <td>{{ c.type_chantier }}</td>
-            <td>{{ c.id_insee }}</td>
-            <td>{{ c.surface }}</td>
-            <td>{{ c.societe }}</td>
-            <td>{{ c.important|yesno:"Oui,Non" }}</td>
-            <td>{{ c.etat_id_n }}</td>
-          <td>
-        <a class="btn btn-ajouter" href="{% url 'ajouter_travaux_chantier' c.id_chantier_sylviculture_n %}">Ajouter travaux</a>
-        <a class="btn btn-voir" href="{% url 'voir_travaux_chantier' c.id_chantier_sylviculture_n %}">Voir travaux</a>
-        <a class="btn btn-voir" href="{% url 'liste_ilots' c.id_chantier_sylviculture_n %}" class="btn-success btn-sm">Voir îlots</a>
-        <a class="btn btn-ajouter" href="{% url 'modifier_chantier' c.id_chantier_sylviculture_n %}">Modifier</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="7">Aucun chantier disponible.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="container">
+    <div id="loading-overlay" style="display:none;">
+        <div class="loader"></div>
+        <span class="loader-text">Chargement...</span>
+    </div>
+    <h2>Liste des Reboisements</h2>
+    
+    <form method="get" id="filter-form">
+        <fieldset>
+            <legend>Critères de sélection</legend>
+            <div class="filter-grid">
+                <div class="filter-block">
+                    <div class="filter-block-title">Reboisement</div>
+                    <div class="filter-group">
+                        <label for="agence-select" class="filter-label">Agence</label>
+                        <select name="agence" id="agence-select">
+                            <option value="">Toutes les agences</option>
+                            {% for agence in agences %}
+                                <option value="{{ agence.agence }}" {% if selected_agence == agence.agence|stringformat:"s" %}selected{% endif %}>{{ agence.agence }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="bureau-select" class="filter-label">Bureau</label>
+                        <select name="bureau" id="bureau-select">
+                            <option value="">Tous les bureaux</option>
+                            {% for bureau in bureaux %}
+                                <option value="{{ bureau.code_bureau }}" {% if selected_bureau == bureau.code_bureau|stringformat:"s" %}selected{% endif %}>{{ bureau.nom_bureau }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="secteur-select" class="filter-label">Secteur</label>
+                        <select name="secteur" id="secteur-select">
+                            <option value="">Tous les secteurs</option>
+                            {% for secteur in secteurs %}
+                                <option value="{{ secteur.code_secteur }}" {% if selected_secteur == secteur.code_secteur|stringformat:"s" %}selected{% endif %}>{{ secteur.libelle_secteur }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="commune-select" class="filter-label">Commune</label>
+                        <select name="commune" id="commune-select">
+                            <option value="">Toutes les communes</option>
+                            {% for commune in communes %}
+                                <option value="{{ commune.id_commune_n }}" {% if selected_commune == commune.id_commune_n|stringformat:"s" %}selected{% endif %}>{{ commune.communespesi }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="pepinieres-select" class="filter-label">Pépinière</label>
+                        <select name="pepiniere" id="pepinieres-select">
+                            <option value="">Toutes les pépinières</option>
+                            {% for pepiniere in pepinieres %}
+                                <option value="{{ pepiniere.code_pepiniere }}" {% if selected_pepiniere == pepiniere.code_pepiniere|stringformat:"s" %}selected{% endif %}>
+                                    {{ pepiniere.nom_pepiniere }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-block">
+                    <div class="filter-block-title">Travaux</div>
+                    <div class="filter-group">
+                        <label for="annee-travaux-input" class="filter-label">Année de travaux</label>
+                        <input type="text" name="annee_travaux" id="annee-travaux-input"
+                               value="{{ selected_annee_travaux }}" class="form-control"
+                               placeholder="Ex: 2025">
+                </div>
+                </div>
+                <div class="filter-block">
+                    <div class="filter-block-title">Plants souhaités</div>
+                    <div class="filter-group">
+                        <label for="annee-campagne-input" class="filter-label">Année de campagne</label>
+                        <input type="text" name="annee_campagne" id="annee-campagne-input"
+                               value="{{ selected_annee_campagne }}" class="form-control"
+                               placeholder="Ex: 2025">
+                    </div>
+                    <div class="filter-group">
+                        <label for="essences-select" class="filter-label">Essence</label>
+                        <select name="essence" id="essences-select">
+                            <option value="">Toutes les essences</option>
+                            {% for essence in essences %}
+                                <option value="{{ essence.cod_nv4 }}" {% if selected_essence == essence.cod_nv4|stringformat:"s" %}selected{% endif %}>
+                                    {{ essence.libelle_essence }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="filter-block">
+                    <div class="filter-block-title">Chantier Procofor</div>
+                    <div class="filter-group">
+                        <label for="cloture-select" class="filter-label">Clôturé</label>
+                        <select name="cloture" id="cloture-select">
+                            <option value="">Tous</option>
+                            <option value="1" {% if selected_cloture == "1" %}selected{% endif %}>Oui</option>
+                            <option value="0" {% if selected_cloture == "0" %}selected{% endif %}>Non</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </form>
 
+ 
+    <div class="pagination-controls">
+        <div class="pagination-info">
+            {% if chantiers_avec_essences.has_other_pages %}
+                Affichage de {{ chantiers_avec_essences.start_index }} à {{ chantiers_avec_essences.end_index }} 
+                sur {{ chantiers_avec_essences.paginator.count }} résultats
+            {% else %}
+                {{ chantiers_avec_essences|length }} résultat{{ chantiers_avec_essences|length|pluralize }}
+            {% endif %}
+        </div>
+      
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Secteur</th>
+                    <th>Propriétaire</th>
+                    <th>Commune</th>
+                    <th>Surface</th>
+                    <th>Regarnis</th>
+                    <th>Pepiniere</th>
+                    <th>Type chantier</th>
+                    <th>Nombre Plants souhaités</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in chantiers_avec_essences %}
+                {% with chantier=item.chantier essences=item.essences %}
+                <tr class="chantier-row"
+                    data-essences="{% for essence in essences %}{{ essence.libelle_essence }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                    <td>
+                        {% if chantier.id_secteur_n and chantier.id_secteur_n|length > 60 %}
+                        <span class="cell-content long" title="{{ chantier.secteur }}">{{ chantier.id_secteur_n|truncatechars:60 }}</span>
+                        {% else %}
+                        <span class="cell-content">{{ chantier.id_secteur_n|default_if_none:"" }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if chantier.nompropietaire_a and chantier.nomproprietaire_a|length > 60 %}
+                        <span class="cell-content long" title="{{ chantier.nom_propietaire }}">{{ chantier.nomproprietaire_a|truncatechars:60 }}</span>
+                        {% else %}
+                        <span class="cell-content">{{ chantier.nomproprietaire_a|default_if_none:"" }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if chantier.id_insee_n and chantier.id_insee_n|length > 60 %}
+                        <span class="cell-content long" title="{{ chantier.id_insee }}">{{ chantier.id_insee_n|truncatechars:60 }}</span>
+                        {% else %}
+                        <span class="cell-content">{{ chantier.id_insee_n|default_if_none:"" }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="cell-content">{{ chantier.cs_surface_indicative_n|default_if_none:"" }}</span>
+                    </td>
+                    <td>
+                        <span class="cell-content">{{ chantier.regarnis|default_if_none:"" }}</span>
+                    </td>
+                    <td>
+                        {% if chantier.id_pepiniere_a %}
+                        <span class="cell-content long" title="{{ chantier.id_pepiniere }}">{{ chantier.id_pepiniere_a|truncatechars:60 }}</span>
+                        {% else %}
+                        <span class="cell-content">{{ chantier.id_pepiniere_a|default_if_none:"" }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if chantier.id_typechantier_a and chantier.idtype_chantier_a|length > 60 %}
+                        <span class="cell-content long" title="{{ chantier.type_chantier }}">{{ chantier.type_chantier|truncatechars:60 }}</span>
+                        {% else %}
+                        <span class="cell-content">{{ chantier.id_typechantier_a|default_if_none:"" }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ item.total_plants }}
+                    </td>
+
+                    <td>
+                        {% if chantier.cs_id_n %}
+                        <a href="{% url 'afficher_essences_chantier' chantier.cs_id_n %}" class="btn-success btn-sm">Afficher essences</a>
+                        <a href="{% url 'liste_ilots_chantier' chantier.cs_id_n %}" class="btn-success btn-sm">Voir îlots</a>
+                        <a class="btn btn-ajouter" href="{% url 'modifier_chantier' chantier.cs_id_n %}">Modifier</a>
+                        <a class="btn btn-voir" href="{% url 'voir_travaux_chantier' chantier.cs_id_n %}">Voir travaux</a>
+
+                        {% else %}
+                        <span class="text-muted">ID manquant</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endwith %}
+                {% empty %}
+                <tr>
+                    <td colspan="9" style="text-align:center;color:#888;">Aucun chantier trouvé.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    
+    {% if chantiers_avec_essences.has_other_pages %}
+    <div class="pagination">
+        {% if chantiers_avec_essences.has_previous %}
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1" class="page-link">« Premier</a>
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ chantiers_avec_essences.previous_page_number }}" class="page-link">‹ Précédent</a>
+        {% else %}
+            <span class="page-link disabled">« Premier</span>
+            <span class="page-link disabled">‹ Précédent</span>
+        {% endif %}
+
+        {% for num in chantiers_avec_essences.paginator.page_range %}
+            {% if chantiers_avec_essences.number == num %}
+                <span class="page-link current">{{ num }}</span>
+            {% elif num > chantiers_avec_essences.number|add:'-3' and num < chantiers_avec_essences.number|add:'3' %}
+                <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}" class="page-link">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if chantiers_avec_essences.has_next %}
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ chantiers_avec_essences.next_page_number }}" class="page-link">Suivant ›</a>
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ chantiers_avec_essences.paginator.num_pages }}" class="page-link">Dernier »</a>
+        {% else %}
+            <span class="page-link disabled">Suivant ›</span>
+            <span class="page-link disabled">Dernier »</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function () {
+        var isUserChange = true;
+        var shouldSubmit = false;
+        $('select').select2({ width: '100%' });
+
+        function updateSecteurs() {
+            var bureauId = $('#bureau-select').val() || '';
+            isUserChange = false;
+            $.get("{% url 'get_secteurs_by_bureau' %}", { bureau_id: bureauId }, function (data) {
+                var secteurSelect = $('#secteur-select');
+                secteurSelect.empty().append('<option value="">Tous les secteurs</option>');
+                $.each(data, function (i, item) {
+                    secteurSelect.append('<option value="' + item.id + '">' + item.nom + '</option>');
+                });
+                secteurSelect.val("{{ selected_secteur|default_if_none:'' }}").trigger('change.select2');
+                isUserChange = true;
+                if (shouldSubmit) {
+                    $('#filter-form').submit();
+                    shouldSubmit = false;
+                }
+            });
+        }
+
+        function updateBureaux() {
+            var agenceId = $('#agence-select').val() || '';
+            isUserChange = false;
+            $.get("{% url 'get_bureaux_by_agence' %}", { agence_id: agenceId }, function (data) {
+                var bureauSelect = $('#bureau-select');
+                bureauSelect.empty().append('<option value="">Tous les bureaux</option>');
+                $.each(data, function (i, item) {
+                    bureauSelect.append('<option value="' + item.id + '">' + item.nom + '</option>');
+                });
+                bureauSelect.trigger('change.select2');
+                updateSecteurs();
+                isUserChange = true;
+                shouldSubmit = true;
+            });
+        }
+
+        $('#agence-select').change(function () {
+            if (isUserChange) {
+                updateBureaux();
+            }
+        });
+
+        $('#bureau-select').change(function () {
+            if (isUserChange) {
+                updateSecteurs();
+                shouldSubmit = true;
+            }
+        });
+
+        $('#annee-travaux-input').blur(function() {
+            if (isUserChange) {
+                $('#filter-form').submit();
+            }
+        });
+
+        $('#secteur-select').change(function () {
+            if (isUserChange) {
+                $('#filter-form').submit();
+            }
+        });
+
+        $('#cloture-select').change(function () {
+            if (isUserChange) {
+                $('#filter-form').submit();
+            }
+        });
+
+        $('#commune-select').change(function () {
+            if (isUserChange) {
+                $('#filter-form').submit();
+            }
+        });
+
+        $('#pepinieres-select').change(function () {
+            if (isUserChange) {
+                $('#filter-form').submit();
+            }
+        });
+
+        $('#essences-select').change(function () {
+            if (isUserChange) {
+                $('#filter-form').submit();
+            }
+        });
+
+        $('#annee-campagne-input').blur(function() {
+            $('#filter-form').submit();
+        });
+
+        $('#per-page-select').change(function () {
+            if (isUserChange) {
+                var form = $('#filter-form');
+                $('<input>').attr({
+                    type: 'hidden',
+                    name: 'page',
+                    value: '1'
+                }).appendTo(form);
+                form.submit();
+            }
+        });
+
+    if ($('#agence-select').val() && $('#bureau-select').val()) {
+            isUserChange = false;
+            updateSecteurs();
+            isUserChange = true;
+        }
+    });
+
+    $('#filter-form').on('submit', function() {
+        $('#loading-overlay').show();
+    });
+</script>
 </body>
 </html>
-

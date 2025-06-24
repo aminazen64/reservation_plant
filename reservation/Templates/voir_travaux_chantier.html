@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -66,8 +68,8 @@
         <ul>
             {% for t in travaux %}
                 <li>
-                    <strong>Année :</strong> {{ t.annee_n }}<br>
-                    <strong>Travail :</strong> {{ t.travaux_niv3_n }}
+                    <strong>Année :</strong> {{ t.tc_annee_n }}<br>
+                    <strong>Travail :</strong> {{ t.id_niv3_n }}
                 </li>
             {% endfor %}
         </ul>
@@ -76,6 +78,8 @@
     {% endif %}
 
     <a href="{% url 'liste_chantiers' %}">← Retour à la liste des chantiers</a>
+        <a class="btn btn-ajouter" href="{% url 'ajouter_travaux_chantier' chantier.cs_id_n %}">Ajouter travaux</a>
+
 
 </body>
 </html>

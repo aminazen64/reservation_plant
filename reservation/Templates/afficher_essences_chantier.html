@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Essences du chantier {{ chantier.id_chantier_sylviculture_n }}</title>
+    <style>
+        body {
+            background: #f4f6f8;
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(60, 72, 88, 0.12);
+            padding: 32px 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e8f5e8;
+        }
+
+        h1 {
+            color: #008a17;
+            margin: 0;
+            font-weight: 700;
+            font-size: 2.2rem;
+            letter-spacing: 1px;
+        }
+
+        .chantier-info {
+            background: #f9fbe7;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            border-left: 4px solid #008a17;
+        }
+
+        .chantier-info h3 {
+            color: #388e3c;
+            margin: 0 0 8px 0;
+            font-size: 1.1rem;
+        }
+
+        .chantier-info p {
+            margin: 0;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .essences-section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            color: #008a17;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #c5e1a5;
+        }
+
+        ol {
+            list-style-type: decimal;
+            padding-left: 25px;
+        }
+
+        li {
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        li:before {
+            content: "🌿 ";
+        }
+
+        .no-essences {
+            text-align: center;
+            padding: 40px 20px;
+            background: #fff3e0;
+            border-radius: 12px;
+            border: 2px dashed #ffb74d;
+            color: #f57c00;
+            font-style: italic;
+            font-size: 1.1rem;
+        }
+
+        .actions {
+            text-align: center;
+            padding-top: 24px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .btn-back {
+            display: inline-block;
+            background: linear-gradient(135deg, #008a17 0%, #388e3c 100%);
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 138, 23, 0.3);
+        }
+
+        .btn-back:hover {
+            background: linear-gradient(135deg, #006d14 0%, #2e7d32 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 138, 23, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Essences du chantier</h1>
+        </div>
+
+        <div class="chantier-info">
+            <h3>Informations du chantier</h3>
+            <p><strong>ID :</strong> {{ chantier.cs_id_n }}</p>
+            {% if chantier.id_secteur_n %}
+                <p><strong>Secteur :</strong> {{ chantier.id_secteur_n }}</p>
+            {% endif %}
+            {% if chantier.nompropietaire_a %}
+                <p><strong>Propriétaire :</strong> {{ chantier.nompropietaire_a }}</p>
+            {% endif %}
+        </div>
+
+        <div class="essences-section">
+            <h2 class="section-title">Liste des essences</h2>
+            
+            {% if essences %}
+                <ol>
+                    {% for essence in essences %}
+                        <li>{{ essence.libelle_essence }}</li>
+                    {% endfor %}
+                </ol>
+            {% else %}
+                <div class="no-essences">
+                    <p>🌿 Aucune essence trouvée pour ce chantier.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="actions">
+            <a href="{% url 'liste_chantiers' %}" class="btn-back">
+                ← Retour à la liste des chantiers
+            </a>
+        </div>
+    </div>
+</body>
+</html>

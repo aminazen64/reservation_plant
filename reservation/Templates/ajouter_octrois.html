@@ -1,0 +1,257 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulaire Octrois</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/ajouter.css' %}">
+
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(60, 72, 88, 0.12);
+            padding: 32px 40px 40px 40px;
+        }
+        .form-title {
+            text-align: center;
+            color: #388e3c;
+            margin-bottom: 32px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .form-label {
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #555;
+            font-size: 15px;
+        }
+        .form-control,
+        .form-select {
+            border-radius: 8px;
+            padding: 10px 12px;
+            border: 1.5px solid #81c784;
+            background: #f9fbe7;
+            color: #388e3c;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #2e7d32;
+            box-shadow: none;
+            outline: none;
+        }
+        .form-select option {
+            background-color: white;
+            color: #333;
+        }
+        .btn-primary {
+            background-color: #388e3c;
+            border-color: #388e3c;
+            color: #fff;
+            font-weight: 500;
+            padding: 12px 24px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #2e7d32;
+            border-color: #2e7d32;
+        }
+        .select2-container--default .select2-selection--single {  
+    border-radius: 8px;  
+    border: 1.5px solid #81c784;  
+    background: #f9fbe7;  
+    color: #388e3c;  
+    font-size: 16px;  
+    height: 42px;  
+    padding: 6px 12px;  
+    transition: border-color 0.2s;  
+    min-height: 42px;  
+    display: flex;  
+    align-items: center;  
+}  
+  
+.select2-container--default .select2-selection--single .select2-selection__rendered {  
+    color: #388e3c;  
+    line-height: 28px;  
+    font-size: 16px;  
+    padding-left: 2px;  
+}  
+  
+.select2-container--default .select2-selection--single .select2-selection__arrow {  
+    height: 40px;  
+    right: 8px;  
+}  
+  
+.select2-container--default .select2-selection--single:focus,  
+.select2-container--default .select2-selection--single.select2-selection--focus {  
+    border-color: #2e7d32;  
+    outline: none;  
+    box-shadow: none;  
+    background: #fffde7;  
+}  
+  
+
+.select2-container--default.select2-container--focus .select2-selection--single {  
+    border-color: #2e7d32;  
+    background: #fffde7;  
+}  
+  
+
+.select2-dropdown {  
+    border-radius: 8px;  
+    border: 1.5px solid #81c784;  
+    background: #fff;  
+    font-size: 16px;  
+}  
+  
+.select2-results__option--highlighted {  
+    background-color: #c5e1a5 !important;  
+    color: #388e3c !important;  
+}
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2 class="form-title">Création d'Octrois</h2>
+        <form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+        {% if field.name != 'afficher_depot' and field.name != 'dep_id_n' %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            {{ form.afficher_depot }}
+            <label class="form-check-label" for="id_afficher_depot">Dépot différent de la pépiniere ?</label>
+        </div>
+    </div>
+
+    <div id="depot-field" class="mb-3" {% if not form.afficher_depot.value %}style="display: none;"{% endif %}>
+        <label for="{{ form.dep_id_n.id_for_label }}" class="form-label">{{ form.dep_id_n.label }}</label>
+        {{ form.dep_id_n }}
+        {% if form.dep_id_n.help_text %}
+            <small class="form-text text-muted">{{ form.dep_id_n.help_text }}</small>
+        {% endif %}
+        {% for error in form.dep_id_n.errors %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endfor %}
+    </div>
+    <div id="depot-field" class="mb-3" {% if not form.afficher_depot.value %}style="display: none;"{% endif %}>
+        <label for="{{ form.dep_id_n.id_for_label }}" class="form-label">{{ form.dep_id_n.label }}</label>
+        {{ form.dep_id_n }}
+        {% if form.dep_id_n.help_text %}
+            <small class="form-text text-muted">{{ form.dep_id_n.help_text }}</small>
+        {% endif %}
+        {% for error in form.dep_id_n.errors %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endfor %}
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
+</form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        function toggleDepotField() {
+            if ($('#id_afficher_depot').is(':checked')) {
+                $('#depot-field').show();
+            } else {
+                $('#depot-field').hide();
+            }
+        }
+        toggleDepotField();
+        $('#id_afficher_depot').change(toggleDepotField);
+
+        $('.select2').select2();
+
+       
+        $('#id_id_essence_n').change(function(){
+            var essenceId = $(this).val();
+            if (essenceId) {
+                $.ajax({
+                    url: '/ajax/get_provenances/',
+                    data: {'essence_id': essenceId},
+                    success: function(data){
+                        var $select = $('#id_prv_id_n');
+                        $select.empty();
+                        $select.append('<option value="">---------</option>');
+                        data.forEach(function(item){
+                            $select.append('<option value="'+item.prv_id_n+'">'+item.prv_lib_a+'</option>');
+                        });
+                    }
+                });
+            } else {
+                $('#id_prv_id_n').empty().append('<option value="">---------</option>');
+            }
+        });
+
+        $('#id_ags_id_n').change(function(){
+            var ageSimpleId = $(this).val();
+            if (ageSimpleId) {
+                $.ajax({
+                    url: '/ajax/get_agedetaille/',
+                    data: {'age_simple_id': ageSimpleId},
+                    success: function(data){
+                        var $select = $('#id_agd_id_n');
+                        $select.empty();
+                        $select.append('<option value="">---------</option>');
+                        data.forEach(function(item){
+                            $select.append('<option value="'+item.agd_id_n+'">'+item.agd_lib_a+'</option>');
+                        });
+                    }
+                });
+            } else {
+                $('#id_agd_id_n').empty().append('<option value="">---------</option>');
+            }
+        });
+
+        $('#id_con_id_n').change(function(){
+            var condId = $(this).val();
+            if (condId) {
+                $.ajax({
+                    url: '/ajax/get_cond_precis/',
+                    data: {'cond_id': condId},
+                    success: function(data){
+                        var $select = $('#id_cop_id_n');
+                        $select.empty();
+                        $select.append('<option value="">---------</option>');
+                        data.forEach(function(item){
+                            $select.append('<option value="'+item.cop_id_n+'">'+item.cop_libelle_a+'</option>');
+                        });
+                    }
+                });
+            } else {
+                $('#id_cop_id_n').empty().append('<option value="">---------</option>');
+            }
+        });
+
+        $('form').on('submit', function () {
+            $("#loading-overlay").css("display", "flex");
+        });
+    });
+    </script>
+</body>
+</html>

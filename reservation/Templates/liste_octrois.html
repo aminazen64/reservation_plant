@@ -1,0 +1,317 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Octrois du plant souhaité</title>
+    <link rel="stylesheet" href="{% static 'css/liste.css' %}">
+    <style>
+       body {
+    background: #f4f6f8;
+    font-family: 'Roboto', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(60, 72, 88, 0.12);
+    padding: 32px 40px 40px 40px;
+}
+
+h2 {
+    text-align: center;
+    color: #008a17;
+    margin-bottom: 32px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-size: 2rem;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.filter-block {
+    background: #f9fbe7;
+    border-radius: 12px;
+    padding: 18px 16px 10px 16px;
+    box-shadow: 0 1px 4px rgba(60, 72, 88, 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border: 1.5px solid #c5e1a5;
+}
+
+.filter-block-title {
+    font-weight: 600;
+    color: #008a17;
+    margin-bottom: 8px;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-label {
+    margin-bottom: 4px;
+    font-weight: 500;
+    color: #388e3c;
+    font-size: 15px;
+}
+
+select, input.form-control {
+    min-width: 100px;
+    border-radius: 8px;
+    border: 1.5px solid #81c784;
+    background: #fff;
+    color: #388e3c;
+    font-size: 16px;
+    padding: 8px 10px;
+    height: 40px;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    margin-bottom: 6px;
+}
+
+select:focus, input.form-control:focus {
+    border-color: #008a17;
+    outline: none;
+    background: #fffde7;
+}
+
+.select2-container--default .select2-selection--single {
+    border-radius: 8px;
+    padding: 0 10px;
+    height: 40px;
+    border: 1.5px solid #81c784;
+    background: #fff;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 38px;
+    font-size: 16px;
+    color: #388e3c;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 38px;
+}
+
+
+@media (max-width: 1100px) {
+    .filter-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 700px) {
+    .filter-grid { grid-template-columns: 1fr; }
+    .container { padding: 16px 4px; }
+}
+
+.table-wrapper { 
+    overflow-x: auto; 
+    margin-top: 16px; 
+}
+
+table {
+    width: 80%;
+    margin: auto;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+thead {
+    background-color: #008a17;
+    color: white;
+}
+
+th {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    background-color: #008a17;
+    color: white;
+    font-weight: 600;
+}
+
+td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+    background-color: #f5f5f5;
+}
+
+td a, .btn-success.btn-sm {
+    color: #fff;
+    background-color: #28a745;
+    text-decoration: none;
+    margin-right: 10px;
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 8px 14px;
+    font-size: 14px;
+    display: inline-block;
+    border: none;
+    transition: background 0.2s;
+}
+
+td a:hover, .btn-success.btn-sm:hover {
+    background-color: #218838;
+    color: #fff;
+}
+
+.text-muted {
+    color: #aaa;
+    font-style: italic;
+}
+
+
+td .cell-content {
+    display: block;
+    max-height: 4.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre-line;
+    cursor: pointer;
+}
+
+td .cell-content.expand {
+    max-height: none;
+    white-space: pre-line;
+    overflow: visible;
+    background: #f1f8e9;
+    z-index: 10;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(60, 72, 88, 0.12);
+}
+
+td[colspan="7"] {
+    text-align: center;
+    font-style: italic;
+    color: #999;
+}
+
+
+.loader-text {
+    color: #388e3c;
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: 1px;
+} 
+fieldset {  
+            border: 1px solid #c5e1a5;  
+            border-radius: 12px;  
+            margin-bottom: 20px;  
+            padding: 10px;  
+        }  
+  
+        legend {  
+            color: #008a17;  
+            font-size: 1.2em;  
+            font-weight: bold;  
+            padding: 0 10px;  
+            border-radius: 5px;  
+        }
+        .btn, .btn-primary, .btn-success.btn-sm {
+    color: #fff;
+    background-color: #28a745;
+    text-decoration: none;
+    margin-right: 14px;
+    margin-bottom: 8px;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 12px 22px;
+    font-size: 15px;
+    display: inline-block;
+    border: none;
+    box-shadow: 0 2px 8px rgba(60, 72, 88, 0.14);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.btn-primary {
+    background-color: #388e3c; 
+}
+
+.btn-success, .btn-success.btn-sm {
+    background-color: #28a745; 
+}
+
+.btn:hover, .btn-primary:hover, .btn-success.btn-sm:hover {
+    background-color: #218838;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(60, 72, 88, 0.18);
+    transform: translateY(-2px) scale(1.04);
+}
+    </style>  
+ 
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'liste_plants_pour_ilot' ilot.ilo_id_n %}" class="back-link">← Retour à la liste des plants</a>
+        
+        <h2>Octrois du plant souhaité</h2>
+        
+        <div class="chantier-info">
+            <p><strong>Essence:</strong> {{ plant.id_essence_n }}</p>
+            <p><strong>Provenance:</strong> {{ plant.prv_id_n }}</p>
+            <p><strong>Nombre de plants souhaités:</strong> {{ plant.ps_nbr_plants_souhaites_n }}</p>
+           
+        </div>
+        <a class="btn btn-voir" href="{% url 'octrois_form' plant.ps_id_n %}">Octroyer</a>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre de plants</th>
+                    <th>Date de création</th>
+                    <th>Pépinière</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>  
+                {% for octroi in octrois %}  
+                <tr> 
+                    <td>{{ octroi.oct_nbr_plants_n|default_if_none:"" }}</td>  
+                    <td>{{ octroi.oct_date_creation_d|date:"d/m/Y H:i"|default_if_none:"" }}</td>  
+                    <td>{{ octroi.id_pep_a|default_if_none:"" }}</td>
+                  <td>
+                    
+    <button type="button" class="btn-success btn-sm" onclick="showForm('form-{{ octroi.oct_id_n }}')">
+        Des plants livrés mais non utilisés ?
+    </button>
+    <form method="post" action="{% url 'ajouter_plants_non_utilises' octroi_id=octroi.oct_id_n %}" class="pnp-form" id="form-{{ octroi.oct_id_n }}" style="display:none; margin-top:8px;">
+        {% csrf_token %}
+        <label>Nombre de plants non utilisés :</label>
+        <input type="number" name="pnp_nbrplants_n" min="1" required class="form-control" style="width:120px;display:inline;">
+        <button type="submit" class="btn-success btn-sm" style="margin-left:6px;">Valider</button>
+    </form>
+</td>
+                </tr>  
+                {% empty %}  
+                <tr>  
+                    <td colspan="4" style="text-align:center;color:#888;">Aucun octroi trouvé pour ce plant.</td>  
+                </tr>  
+                {% endfor %}  
+            </tbody>
+        </table>
+    </div>
+    <script>  
+function showForm(formId) {  
+    document.querySelectorAll('.pnp-form').forEach(f => f.style.display = 'none');  
+    document.getElementById(formId).style.display = 'block';  
+}  
+</script>
+</body>
+</html>

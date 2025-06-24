@@ -11,6 +11,13 @@
     justify-content: center;
     flex-direction: column;
 }
+.back-link {
+    display: inline-block;
+    margin-bottom: 16px; 
+    color: #388e3c;
+    text-decoration: none;
+    font-weight: 500;
+}
 
 .loader {
     border: 6px solid #f3f3f3;

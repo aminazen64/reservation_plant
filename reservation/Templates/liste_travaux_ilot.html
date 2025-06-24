@@ -1,0 +1,202 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des travaux îlot {{ ilot.ilo_id_n }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background: #f4f6f8;
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(60, 72, 88, 0.12);
+            padding: 32px 40px 40px 40px;
+        }
+        h2 {
+            text-align: center;
+            color: #388e3c;
+            margin-bottom: 32px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+.table-wrapper { 
+    overflow-x: auto; 
+    margin-top: 16px; 
+}
+
+table {
+    width: 80%;
+    margin: auto;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+thead {
+    background-color: #008a17;
+    color: white;
+}
+
+th {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    background-color: #008a17;
+    color: white;
+    font-weight: 600;
+}
+
+td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+    background-color: #f5f5f5;
+}
+
+
+td a {
+    color: #008b0c;
+    text-decoration: none;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+td a:hover {
+    text-decoration: underline;
+}
+
+.btn-success.btn-sm {
+    background-color: #28a745; 
+    color: white;
+    padding: 8px 14px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.btn-success.btn-sm:hover {
+    background-color: #218838;
+}
+
+
+td .cell-content {
+    display: block;
+    max-height: 4.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre-line;
+    cursor: pointer;
+}
+
+td .cell-content.expand {
+    max-height: none;
+    white-space: pre-line;
+    overflow: visible;
+    background: #f1f8e9;
+    z-index: 10;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(60, 72, 88, 0.12);
+}
+
+td[colspan="7"] {
+    text-align: center;
+    font-style: italic;
+    color: #999;
+}
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-primary {
+            background-color: #388e3c;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2e7d32;
+        }
+        .btn-secondary {
+            background-color: #757575;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #616161;
+        }
+        .add-btn {
+            float: right;
+            margin-bottom: 16px;
+        }
+        .ilot-info {
+            background: #f1f8e9;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border-left: 4px solid #388e3c;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">  
+        <a href="{% url 'liste_ilots_chantier' chantier.cs_id_n %}" class="back-link">← Retour à la liste des îlots</a>  
+        <h2>Liste des travaux îlot </h2>  
+        <div class="ilot-info">  
+            <strong>Surface :</strong> {{ ilot.ilo_surface_n|default_if_none:"" }}<br>  
+            <strong>% Non Plantable :</strong> {{ ilot.ilo_prc_nonplantable_n|default_if_none:"" }}<br>  
+            <strong>Espace Entre-ligne :</strong> {{ ilot.ilo_espace_entreligne_n|default_if_none:"" }}<br>  
+            <strong>Espace Sur-ligne :</strong> {{ ilot.ilo_espace_surligne_n|default_if_none:"" }}  
+        </div>
+        <a href="{% url 'ajouter_travaux_ilot' ilot.ilo_id_n %}" class="btn btn-primary add-btn">Ajouter un travail</a>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sous-traitant</th>
+                    <th>Niveau 3</th>
+                    <th>Niveau 4</th>
+                    <th>Niveau 5</th>
+                    <th>Type opération</th>
+                    <th>Année</th>
+                    <th>Semaine</th>
+                    <th>Quantité</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in travaux %}
+                <tr>  
+                    <td>{{ t.id_sous_traitant_a|default_if_none:"" }}</td>  
+                    <td>{{ t.id_niv3_n|default_if_none:"" }}</td>  
+                    <td>{{ t.id_niv4_n|default_if_none:"" }}</td>  
+                    <td>{{ t.id_niv5_n|default_if_none:"" }}</td>  
+                    <td>{{ t.id_typeope_n|default_if_none:"" }}</td>  
+                    <td>{{ t.til_annee_n|default_if_none:"" }}</td>  
+                    <td>{{ t.til_numero_semaine_n|default_if_none:"" }}</td>  
+                    <td>{{ t.til_quantite_n|default_if_none:"" }}</td> 
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" style="text-align:center;color:#888;">Aucun travail trouvé pour cet îlot.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

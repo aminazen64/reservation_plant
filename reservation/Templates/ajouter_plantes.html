@@ -15,6 +15,8 @@
 <link rel="stylesheet" href="{% static 'css/ajouter.css' %}">
 </head>
 <body>
+    <a href="{% url 'liste_plants_pour_ilot' ilot.ilo_id_n %}" class="btn btn-success" > ← retour plants souhaité</a> 
+
     <div id="loading-overlay" style="display:none;">
       <div class="loader"></div>
       <span class="loader-text">Chargement...</span>

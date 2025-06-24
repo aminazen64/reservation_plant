@@ -1,17 +1,241 @@
+import datetime
 import json
+import logging
 from pyexpat.errors import messages
+from sqlite3 import Cursor
+import time
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
-from .forms import TbChantierSylvicultureForm, TbPlantsSouhaitesForm, TbSoinPlantsForm, TbTravauxChantierForm
-from .models import VNIV5SOIN, TbAgeDetaille, TbChantierSylviculture, TbConditionnementPrecis, TbEtat, TbIlots,TbProvenance, TbSoinsPlants, V_TYPEChantier, VNiV4SOIN, VNiV4TRAV, VNIV5TRAV, VTypeOperation, VNiv3TRAV, VChantier,TbTravauxChantier ,TbPlantsSouhaites, TbRegul, VTypeSOINS
+from .forms import TBIlotsForm, TbChantierSylvicultureForm, TbOctroisForm, TbPlantsSouhaitesForm, TbSoinPlantsForm, TbTravauxChantierForm, TbTravauxIlotForm
+from .models import VNIV5SOIN, AuthUser, TbAgeDetaille, TbChantierSylviculture, TbConditionnementPrecis, TbEtat, TbIlots, TbOctrois,TbProvenance, TbSoinsPlants, TbTravauxIlots, TbUtilisateur, V_TYPEChantier, VAgence, VBureau, VCommune, VEssence, VNiV4SOIN, VNiV4TRAV, VNIV5TRAV, VPepiniere, VSecteur, VTypeOperation, VNiv3TRAV, VChantier,TbTravauxChantier ,TbPlantsSouhaites, TbRegul, VTypeSOINS, VUtilisateur
 from django.db import connection
 from django.utils.timezone import now
 from django.db.models import Sum, Case, When, IntegerField
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
-import time
+from django.db.models import Sum
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from django.contrib.auth.models import User
+import os
+from django.contrib.auth import login as django_log
 
+
+def liste_chantiers(request):  
+    agence_id = request.GET.get('agence') or ''  
+    bureau_id = request.GET.get('bureau') or ''  
+    secteur_id = request.GET.get('secteur') or ''  
+    commune_id = request.GET.get('commune') or ''  
+    essence_id = request.GET.get('essence') or ''  
+    travaux = request.GET.get('annee_travaux') or ''  
+    campagne = request.GET.get('annee_campagne', '') or ''  
+    selected_pepiniere = request.GET.get('pepiniere') or ''  
+    cloture = request.GET.get('cloture', '0')  
+
+    default_items_per_page = 10  
+
+    items_per_page = request.GET.get('per_page', default_items_per_page)  
+    try:  
+        items_per_page = int(items_per_page)  
+        if items_per_page not in [10, 25, 50, 100]:  
+            items_per_page = default_items_per_page  
+    except (ValueError, TypeError):  
+        items_per_page = default_items_per_page  
+
+    chantiers = TbChantierSylviculture.objects.all()  
+
+    
+
+    if agence_id:  
+        chantiers = chantiers.filter(cs_agence_a=agence_id)  
+    if bureau_id:  
+        chantiers = chantiers.filter(id_bureau_n=bureau_id)  
+    if secteur_id:  
+        chantiers = chantiers.filter(id_secteur_n=secteur_id)  
+    if commune_id:  
+        chantiers = chantiers.filter(id_insee_n=commune_id)  
+    if travaux:  
+        try:  
+            travaux = int(travaux)  
+            chantiers = chantiers.filter(tbtravauxchantier__annee_n=travaux).distinct()  
+        except ValueError:  
+            pass  
+    if cloture != '':  
+        codes_chantiers = list(VChantier.objects.filter(Cloture=int(cloture)).values_list('code_chantier', flat=True))  
+        chantiers = chantiers.filter(id_typechantier_a__code_chantier__in=codes_chantiers)  
+    if campagne:  
+        try:  
+            campagne_int = int(campagne)  
+            chantiers = chantiers.filter(  
+                cs_id_n__in=TbIlots.objects.filter(  
+                    tbplantssouhaites__ps_campagne_n=campagne_int  
+                ).values_list('cs_id_n', flat=True)  
+            )  
+        except ValueError:  
+            pass  
+    if essence_id:  
+        chantiers = chantiers.filter(  
+            cs_id_n__in=TbIlots.objects.filter(  
+                tbplantssouhaites__id_essence_n=essence_id  
+            ).values_list('cs_id_n', flat=True)  
+        )  
+    if selected_pepiniere:  
+        chantiers = chantiers.filter(id_pepiniere_a=selected_pepiniere)  
+
+    paginator = Paginator(chantiers, items_per_page)  
+    page = request.GET.get('page', 1)  
+
+    try:  
+        chantiers_page = paginator.page(page)  
+    except PageNotAnInteger:  
+        chantiers_page = paginator.page(1)  
+    except EmptyPage:  
+        chantiers_page = paginator.page(paginator.num_pages)  
+
+    chantiers_avec_essences = []  
+    for chantier in chantiers_page:  
+        essences = VEssence.objects.filter(  
+            cod_nv4__in=TbPlantsSouhaites.objects.filter(  
+                ilo_id_n__in=TbIlots.objects.filter(  
+                    cs_id_n=chantier.cs_id_n  
+                ).values_list('ilo_id_n', flat=True)  
+            ).values_list('id_essence_n', flat=True)  
+        ).distinct()  
+
+        total_plants = 0  
+        ilots = TbIlots.objects.filter(cs_id_n=chantier.cs_id_n)  
+
+        for ilot in ilots:  
+            plants_souhaites = TbPlantsSouhaites.objects.filter(ilo_id_n=ilot.ilo_id_n)  
+
+            for plant in plants_souhaites:  
+                plant_count = plant.ps_nbr_plants_souhaites_n or 0  
+
+                reguls = TbRegul.objects.filter(ps_id_n=plant.ps_id_n)  
+                for regul in reguls:  
+                    adjustment = regul.reg_nbr_plants_regul_n or 0  
+                    if regul.reg_signe_b:  
+                        plant_count += adjustment  
+                    else:  
+                        plant_count -= adjustment  
+
+                total_plants += plant_count  
+
+        chantiers_avec_essences.append({  
+            'chantier': chantier,  
+            'essences': essences,  
+            'total_plants': total_plants  
+        })  
+
+    class PaginatedList:  
+        def __init__(self, data, page_obj):  
+            self.object_list = data  
+            self.paginator = page_obj.paginator  
+            self.number = page_obj.number  
+
+        def __iter__(self):  
+            return iter(self.object_list)  
+
+        def __len__(self):  
+            return len(self.object_list)  
+
+        def has_other_pages(self):  
+            return self.paginator.num_pages > 1  
+
+        def has_previous(self):  
+            return self.number > 1  
+
+        def has_next(self):  
+            return self.number < self.paginator.num_pages  
+
+        def previous_page_number(self):  
+            return self.number - 1 if self.has_previous() else None  
+
+        def next_page_number(self):  
+            return self.number + 1 if self.has_next() else None  
+
+        def start_index(self):  
+            return (self.number - 1) * self.paginator.per_page + 1  
+
+        def end_index(self):  
+            return min(self.number * self.paginator.per_page, self.paginator.count)  
+
+    paginated_chantiers = PaginatedList(chantiers_avec_essences, chantiers_page)  
+
+    agences = VAgence.objects.all().order_by('agence')  
+    if agence_id:  
+        bureaux = VBureau.objects.filter(code_agence=agence_id).order_by('nom_bureau')  
+    else:  
+        bureaux = VBureau.objects.all().order_by('nom_bureau')  
+    if bureau_id:  
+        secteurs = VSecteur.objects.filter(code_bureau=bureau_id).order_by('libelle_secteur')  
+    else:  
+        secteurs = VSecteur.objects.all().order_by('libelle_secteur')  
+
+    communes = VCommune.objects.all().order_by('communespesi')  
+    essences = VEssence.objects.all().order_by('libelle_essence')  
+    pepinieres = VPepiniere.objects.all().order_by('nom_pepiniere')  
+
+    return render(request, 'list_reb.html', {  
+        'chantiers_avec_essences': paginated_chantiers,  
+        'agences': agences,  
+        'bureaux': bureaux,  
+        'secteurs': secteurs,  
+        'communes': communes,  
+        'pepinieres': pepinieres,  
+        'essences': essences,  
+        'selected_agence': agence_id,  
+        'selected_bureau': bureau_id,  
+        'selected_secteur': secteur_id,  
+        'selected_commune': commune_id,  
+        'selected_annee_travaux': travaux,  
+        'selected_annee_campagne': campagne,  
+        'selected_pepiniere': selected_pepiniere,  
+        'selected_essence': essence_id,  
+        'selected_cloture': cloture,  
+        'items_per_page': items_per_page,  
+    }) 
+def get_communes_by_filters(request):
+    agence_id = request.GET.get('agence_id')
+    bureau_id = request.GET.get('bureau_id')
+    secteur_id = request.GET.get('secteur_id')
+
+    chantiers = TbChantierSylviculture.objects.all()
+
+    if agence_id and agence_id != '':
+        chantiers = chantiers.filter(agence_id=agence_id)
+    if bureau_id and bureau_id != '':
+        chantiers = chantiers.filter(bureau_id=bureau_id)
+    if secteur_id and secteur_id != '':
+        chantiers = chantiers.filter(secteur_id=secteur_id)
+    
+    commune_ids = chantiers.exclude(id_insee=None).values_list('id_insee', flat=True).distinct()
+    
+    communes = VCommune.objects.filter(id_commune_n__in=commune_ids)
+    
+    data = [{'id': commune.id_commune_n, 'nom': commune.communespesi} for commune in communes]
+    
+    return JsonResponse(data, safe=False)
+def get_bureaux_by_agence(request):
+    agence_id = request.GET.get('agence_id')
+    if agence_id:
+        bureaux = VBureau.objects.filter(code_agence=agence_id)
+    else:
+        bureaux = VBureau.objects.all()
+    data = [{'id': bureau.code_bureau, 'nom': bureau.nom_bureau} for bureau in bureaux]
+    return JsonResponse(data, safe=False)
+
+def get_secteurs_by_bureau(request):
+    bureau_id = request.GET.get('bureau_id')
+    if bureau_id:
+        secteurs = VSecteur.objects.filter(code_bureau=bureau_id)
+    else:
+        secteurs = VSecteur.objects.all()
+    data = [{'id': secteur.code_secteur, 'nom': secteur.libelle_secteur} for secteur in secteurs]
+    return JsonResponse(data, safe=False)
+ 
 
 def liste_ilots_chantiers(request, chantier_id):
  
@@ -33,12 +257,12 @@ def liste_ilots_chantiers(request, chantier_id):
 
 
     try:
-        chantier = TbChantierSylviculture.objects.get(id_chantier_sylviculture_n=chantier_id)
+        chantier = TbChantierSylviculture.objects.get(cs_id_n=chantier_id)
     except TbChantierSylviculture.DoesNotExist:
         return HttpResponse("Chantier non trouvé", status=404)
 
     return render(request, 'liste_ilots.html', {
-        'ilots_avec_calcul': ilots_avec_calcul,  # Passer la liste au template
+        'ilots_avec_calcul': ilots_avec_calcul,  
         'chantier': chantier,
     })
 
@@ -49,8 +273,6 @@ def get_chantier_details(request):
     try:
         chantier = VChantier.objects.filter(code_chantier=code_chantier).first()
 
-        # Tu dois ici mapper le `chantier.code_chantier` à un V_TYPEChantier, si possible
-   
         return JsonResponse({
             'agence': chantier.agence,
             'bureau': chantier.bureau,
@@ -88,52 +310,30 @@ def get_ops_by_niv5(request):
 
 def voir_travaux_chantier(request, id):
     chantier = get_object_or_404(TbChantierSylviculture, pk=id)
-    travaux = TbTravauxChantier.objects.filter(id_cs=chantier)
+    travaux = TbTravauxChantier.objects.filter(cs_id_n=chantier)
     return render(request, 'voir_travaux_chantier.html', {'chantier': chantier, 'travaux': travaux})
 
 
 
 def ajouter_chantier(request):
-    start_time = time.time()
-    
+    user = os.getenv("USERNAME")
     if request.method == 'POST':
-        t1 = time.time()
         chantier_form = TbChantierSylvicultureForm(request.POST)
-        t2 = time.time()
-        print(f"Temps création du formulaire : {t2 - t1:.3f}s")
-
         if chantier_form.is_valid():
-            t3 = time.time()
-            chantier = chantier_form.save()
-            t4 = time.time()
-            print(f"Temps validation + sauvegarde : {t4 - t3:.3f}s")
-
-      
-
-            print(f"⏱ Temps total traitement POST : {time.time() - start_time:.3f}s")
+            chantier = chantier_form.save(commit=False)
+            tb_user = TbUtilisateur.objects.get(username=user)
+            chantier.u_id_n = tb_user
+            chantier.save()
             return redirect('liste_chantiers')
         else:
-            print("Formulaire invalide :")
-            print(chantier_form.errors)
-
-            # Afficher les requêtes même si formulaire invalide
-
-            print(f"⏱ Temps total traitement POST avec erreurs : {time.time() - start_time:.3f}s")
-    
+            print(chantier_form.errors)    
     else:
-        t5 = time.time()
         chantier_form = TbChantierSylvicultureForm()
-        t6 = time.time()
-        print(f"Temps création du formulaire (GET) : {t6 - t5:.3f}s")
-
+ 
 
     context = {
         'chantier_form': chantier_form,
     }
-
-    total_time = time.time() - start_time
-    print(f"⏱ Temps total fonction ajouter_chantier : {total_time:.3f}s")
-
     return render(request, 'ajouter_reb.html', context)
 
 
@@ -145,7 +345,7 @@ def ajouter_travaux_chantier(request, chantier_id):
         travaux_form = TbTravauxChantierForm(request.POST)
         if travaux_form.is_valid():
             travaux = travaux_form.save(commit=False)
-            travaux.id_cs = chantier  # lie le travaux au chantier existant
+            travaux.cs_id_n = chantier
             travaux.save()
             return redirect('liste_chantiers')
     else:
@@ -158,24 +358,17 @@ def ajouter_travaux_chantier(request, chantier_id):
     return render(request, 'ajouter_travaux.html', context)
 
 
-def liste_chantiers(request):
-    chantiers = TbChantierSylviculture.objects.all().select_related(
-        'id_insee', 'societe',
-    )
 
-    return render(request, 'list_reb.html', {
-        'chantiers': chantiers
-    })
     
     
     
 def modifier_chantier(request, chantier_id):
-    chantier = get_object_or_404(TbChantierSylviculture, id_chantier_sylviculture_n=chantier_id)
+    chantier = get_object_or_404(TbChantierSylviculture,cs_id_n=chantier_id)
     if request.method == 'POST':
         form = TbChantierSylvicultureForm(request.POST, instance=chantier)
         if form.is_valid():
             form.save()
-            return redirect('liste_chantiers')  # ou autre nom de vue pour retourner à la liste
+            return redirect('liste_chantiers') 
     else:
         form = TbChantierSylvicultureForm(instance=chantier)
     return render(request, 'modifier_chantier.html', {'form': form, 'chantier': chantier})
@@ -185,28 +378,26 @@ def modifier_chantier(request, chantier_id):
 @require_POST
 @csrf_protect
 def annuler_reboisement(request, chantier_id):
-    chantier = get_object_or_404(TbChantierSylviculture, id_chantier_sylviculture_n=chantier_id)
+    chantier = get_object_or_404(TbChantierSylviculture, cs_id_n=chantier_id)
 
-    # Cherche les îlots liés
+
     ilots = TbIlots.objects.filter(cs_id_n=chantier)
 
-    # S'il y a des îlots, vérifier les plants souhaités bloquants
+
     if ilots.exists():
         bloquant = TbPlantsSouhaites.objects.filter(
             ilo_id_n__in=ilots,
-            sts_id_n__in=[2, 7]  # 2 = réservé, 7 = commandé
+            sts_id_n__in=[2, 7] 
         ).exists()
 
         if bloquant:
             return JsonResponse({"status": "blocked"})
 
-        # Annuler aussi les îlots
-        etat_annule = TbEtat.objects.get(id_etat_n=4)
-        ilots.update(eta_id_n=etat_annule)
+        etat_annule = TbEtat.objects.get(Id_etat_n=4)
+        ilots.update(etat_id_n=etat_annule)
     else:
-        etat_annule = TbEtat.objects.get(id_etat_n=4)
+        etat_annule = TbEtat.objects.get(Id_etat_n=4)
 
-    # Mise à jour de l’état du chantier
     chantier.etat_id_n = etat_annule
     chantier.save()
 
@@ -215,16 +406,18 @@ def annuler_reboisement(request, chantier_id):
 
 def ajouter_plant_souhaite(request, ilot_id):
     ilot = get_object_or_404(TbIlots, pk=ilot_id)
-
     if request.method == 'POST':
         form = TbPlantsSouhaitesForm(request.POST)
+        user=os.getenv("USERNAME")
         if form.is_valid():
             plant = form.save(commit=False)
-            plant.ilo_id_n = ilot  
+            tb_user = TbUtilisateur.objects.get(username=user)
+            plant.ilo_id_n = ilot
+            plant.u_id_n = tb_user
             plant.save()
-            return redirect('liste_plants_pour_ilot', ilot_id=ilot.ilo_id_n)  # Correction : ilot.ilo_id_n au lieu de ilot.id_ilot_n
+            return redirect('liste_plants_pour_ilot', ilot_id=ilot.ilo_id_n) 
     else:
-        form = TbPlantsSouhaitesForm()  # Définit form dans le cas GET
+        form = TbPlantsSouhaitesForm() 
 
     return render(request, 'ajouter_plantes.html', {
         'form': form,
@@ -236,8 +429,8 @@ def ajouter_plant_souhaite(request, ilot_id):
 def liste_plants(request, ilot_id):
     ilot = get_object_or_404(TbIlots, pk=ilot_id)
     plants = TbPlantsSouhaites.objects.filter(ilo_id_n=ilot_id)
-    chantier = ilot.cs_id_n  # objet TbChantierSylviculture
-
+    chantier = ilot.cs_id_n  
+    role = TbUtilisateur.objects.get(username=os.getenv("USERNAME")).role
     plants_with_totals = []
     for plant in plants:
         souhaites = plant.ps_nbr_plants_souhaites_n or 0
@@ -245,8 +438,6 @@ def liste_plants(request, ilot_id):
             plant.ps_campagne_n = 0
         else:
             plant.ps_campagne_n = f" { plant.ps_campagne_n} - {plant.ps_campagne_n+ 1}"
-        # Calcul des régulations pour chaque plant
-        # Total des régulations pour le plant
         total_plus = TbRegul.objects.filter(ps_id_n=plant, reg_signe_b=True).aggregate(
             Sum('reg_nbr_plants_regul_n')
         )['reg_nbr_plants_regul_n__sum'] or 0
@@ -262,7 +453,8 @@ def liste_plants(request, ilot_id):
 
         plants_with_totals.append({
             'plant': plant,
-            'total_regule': total_regule
+            'total_regule': total_regule,
+          
         })
 
     return render(request, 'liste_plants.html', {
@@ -270,19 +462,96 @@ def liste_plants(request, ilot_id):
         'chantier': chantier,
         'ilot': ilot,
         'plants': plants,
+        'role': role,
     })
 
+def ajouter_ilot(request,chantier_id):
+    types = TbEtat.objects.exclude(type_a__isnull=True).distinct()
+    chantier = get_object_or_404(TbChantierSylviculture, cs_id_n=chantier_id)
+    user = os.getenv("USERNAME")
+    if request.method == 'POST':
+        form = TBIlotsForm(request.POST)
+        if form.is_valid():
+            ilot = form.save(commit=False)
+            tb_user = TbUtilisateur.objects.get(username=user)
+            ilot.u_id_n = tb_user
 
-def choix_annuler_reporter(request, ps_id):
+            ilot.cs_id_n = chantier
+            ilot.ilo_date_creation_d = timezone.now()       
+            ilot.save()
+            return redirect('liste_ilots_chantier')
+    else:
+        form = TBIlotsForm()
+
+    return render(request, 'ajouter_ilot.html', {'form': form, 'types': types})
+
+def liste_octrois_pour_plant(request, plant_id):  
+    plant = get_object_or_404(TbPlantsSouhaites, pk=plant_id)  
+    octrois = TbOctrois.objects.filter(ps_id_n=plant_id)  
+    ilot = plant.ilo_id_n
+    return render(request, 'liste_octrois.html', {  
+        'plant': plant,  
+        'octrois': octrois, 
+        'ilot':ilot
+
+    })
+
+def octrois_form(request, plant_id):
+    plant = get_object_or_404(TbPlantsSouhaites, ps_id_n=plant_id)
+    pepiniere_id = None
+   
+    ilot = plant.ilo_id_n
+  
+    chantier_id = ilot.cs_id_n
+    if chantier_id:
+        try:
+           
+            chantier = TbChantierSylviculture.objects.get(pk=chantier_id)
+            0
+            pepiniere_id = chantier.id_pepiniere_id
+        except TbChantierSylviculture.DoesNotExist:
+            pepiniere_id = None
+
+    if request.method == 'POST':
+        form = TbOctroisForm(request.POST)
+        if form.is_valid():
+            afficher_depot = form.cleaned_data.get('afficher_depot', False)
+            octrois = form.save(commit=False)
+            octrois.u_id_n = get_object_or_404(Utilisateurprocofor, user_djan=366)
+            octrois.ps_id_n = plant
+            octrois.oct_date_creation_d = timezone.now()
+            if not afficher_depot:
+                octrois.dep_id_n = None
+            from .models import VEssence
+            octrois.id_essence_n = VEssence.objects.get(pk=plant.id_essence_n)
+            octrois.save()
+            return redirect('liste_octrois_pour_plant', plant_id=plant_id)
+    else:
+        form = TbOctroisForm(initial={
+            'id_pep_a': pepiniere_id,
+            'id_essence_n': plant.id_essence_n,
+            'ta_id_n': plant.ta_id_n_id,  
+            'con_id_n': plant.con_id_n,  
+            'cop_id_n': plant.cop_id_n_id, 
+            'ags_id_n': plant.ags_id_n_id,
+            'agd_id_n': plant.agd_id_n_id,  
+            'oct_nbr_plants_n': plant.ps_nbr_plants_souhaites_n, 
+            'prv_id_n': plant.prv_id_n_id, 
+        })
+    return render(request, 'ajouter_octrois.html', {
+        'form': form,
+    })
+  
+def choix_annuler_reporter(request, ilot_id, ps_id):
     plant = get_object_or_404(TbPlantsSouhaites, ps_id_n=ps_id)
 
     STADE_ENVISAGE = 1
-    STADE_ANNULE = 4  # À créer si pas encore dans la table
-    STADE_COMMANDE_TERMINEE = 5  # Exemple
+    STADE_ANNULE = 3  
+    STADE_COMMANDE_TERMINEE = 7 
 
-    if plant.sts_id_n_id == STADE_COMMANDE_TERMINEE (plant):
-        messages.error(request, "Andouille, tu as déjà effectué des demandes de livraison !")
-        return redirect('liste_plants', ilot_id=plant.ilo_id_n_id)
+    if plant.sts_id_n == STADE_COMMANDE_TERMINEE:
+        messages.error(request, "tu as déjà effectué des demandes de livraison !")
+        return redirect('liste_plants', ilot_id=plant.ilo_id_n)
 
     if request.method == "POST":
         choix = request.POST.get("choix")
@@ -300,16 +569,24 @@ def choix_annuler_reporter(request, ps_id):
             ))
         )
 
+        total_plus = total_regule['total_plus'] or 0
+        total_moins = total_regule['total_moins'] or 0
+        quantite_totale = total_plus - total_moins
+
         if choix == "annuler":
-            if total_regule > 0:
+            if quantite_totale > 0:
                 TbRegul.objects.create(
                     ps_id_n=plant,
-                    quantite=-total_regule,
-                    motif="Annulation"
+                    reg_nbr_plants_regul_n= quantite_totale,
+                    reg_date_d=now(),
+                    u_id_n=1,  
+                    reg_signe_b=False,
+                    reg_motif_a="Régulation automatique",
                 )
             plant.sts_id_n_id = STADE_ANNULE
             plant.save()
-            return redirect('liste_plants', ilot_id=plant.ilo_id_n_id)
+            return redirect('liste_plants_pour_ilot', ilot_id=ilot_id)
+
 
         elif choix == "reporter":
             # Dupliquer la fiche
@@ -320,24 +597,28 @@ def choix_annuler_reporter(request, ps_id):
             new_plant.save()
 
             # Copier les réguls
-            for reg in plant.regul_set.all():
+            for reg in plant.reguls.all():
                 TbRegul.objects.create(
                     ps_id_n=new_plant,
-                    quantite=reg.quantite,
-                    motif=f"Reporté depuis {plant.ps_id_n}"
+                    reg_nbr_plants_regul_n=reg.reg_nbr_plants_regul_n,
+                    reg_signe_b=reg.reg_signe_b,
+                    reg_date_d=reg.reg_date_d,
+                    u_id_n=reg.u_id_n,
+                    reg_motif_a=f"Reporté depuis {plant.ps_id_n}"
                 )
 
             # Marquer ancienne comme annulée
             plant.sts_id_n_id = STADE_ANNULE
             plant.save()
 
-            return redirect('liste_plants', ilot_id=plant.ilo_id_n_id)
+            return redirect('liste_plants_pour_ilot', ilot_id=ilot_id)
+    ilot = plant.ilo_id_n  # Objet TbIlots directement
 
-    return render(request, "choix_annuler_reporter.html", {"plant": plant})
+    return render(request, "choix_annuler_reporter.html", {"plant": plant, 'ilot': ilot})
 
 def get_chantier_from_ilot(ilot):
     try:
-        return TbChantierSylviculture.objects.get(id_chantier_sylviculture_n=ilot.cs_id_n)
+        return TbChantierSylviculture.objects.get(cs_id_n=ilot.cs_id_n)
     except TbChantierSylviculture.DoesNotExist:
         return None
 
@@ -382,15 +663,14 @@ def ajouter_soin_pour_plant(request, ps_id,ilot_id):
 
 
 def liste_soins_plants(request, plant_id):
-    # Récupère le plant ou renvoie 404 si inexistant
     plant = get_object_or_404(TbPlantsSouhaites, pk=plant_id)
 
-    # Récupère la liste des soins liés à ce plant
     soins = TbSoinsPlants.objects.filter(ps_id_n=plant).order_by('soi_id_n')
 
     context = {
         'plant': plant,
         'soins': soins,
+        'ilot': plant.ilo_id_n,  # Utilisation de l'objet TbIlots directement
     }
     return render(request, 'voir_soins.html', context)
 
@@ -457,3 +737,99 @@ def get_cond_precis_by_cond(request):
     cond_id = request.GET.get('cond_id')
     cond_precis = TbConditionnementPrecis.objects.filter(con_id_n=cond_id).values('cop_id_n', 'cop_libelle_a')
     return JsonResponse(list(cond_precis), safe=False)
+
+def afficher_essences_chantier(request, chantier_id):  
+    chantier = get_object_or_404(TbChantierSylviculture,cs_id_n=chantier_id)  
+
+    essences = VEssence.objects.filter(  
+        cod_nv4__in=TbPlantsSouhaites.objects.filter(  
+            ilo_id_n__in=TbIlots.objects.filter(  
+                cs_id_n=chantier.cs_id_n  
+            ).values_list('ilo_id_n', flat=True)  
+        ).values_list('id_essence_n', flat=True)  
+    ).distinct()  
+
+    context = {  
+        'chantier': chantier,  
+        'essences': essences  
+    }  
+    return render(request, 'afficher_essences_chantier.html', context)
+
+
+
+logger = logging.getLogger(__name__)  
+def user_login(request):
+    username = os.getenv("USERNAME")
+    try:
+        user = User.objects.get(username=username)
+        django_login(request, user)
+        return redirect('ajouter_chantier')
+    except User.DoesNotExist:
+        return render(request, 'ajouter_reb.html', {
+            'error': f"Utilisateur '{username}' non trouvé."
+        })
+    
+def ajouter_travaux_ilot(request, ilot_id_n):
+    ilot = get_object_or_404(TbIlots, pk=ilot_id_n)
+    travaux = None
+
+    if request.method == 'POST':
+        travaux_form = TbTravauxIlotForm(request.POST) 
+        if travaux_form.is_valid():
+            travaux = travaux_form.save(commit=False)
+            travaux.ilo_id_n = ilot  
+            travaux.save()
+            return redirect('liste_chantiers') 
+    else:
+        travaux_form = TbTravauxIlotForm() 
+
+    context = {
+        'ilot': ilot, 
+        'travaux': travaux,
+        'travaux_form': travaux_form,
+    }
+    return render(request, 'travaux_ilot.html', context)  
+
+def liste_travaux_ilot(request, ilot_id_n):  
+    ilot = get_object_or_404(TbIlots, pk=ilot_id_n)  
+    travaux = TbTravauxIlots.objects.filter(ilo_id_n=ilot).select_related(  
+        'ilo_id_n',  
+        'id_sous_traitant_a',  
+        'id_niv3_n',  
+        'id_niv4_n',  
+        'id_niv5_n',  
+        'id_typeope_n'  
+    ).order_by('-til_id_n')  
+    chantier=ilot.cs_id_n
+    return render(request, 'liste_travaux_ilot.html', {'travaux': travaux, 'ilot': ilot, 'chantier':chantier})
+
+def modifier_ilot(request, ilot_id):
+    ilot = get_object_or_404(TbIlots, pk=ilot_id)
+    
+    if request.method == 'POST':
+        form = TBIlotsForm(request.POST, instance=ilot)
+        if form.is_valid():
+            if form.cleaned_data.get('eta_id_n') == 3:  
+                plants = TbPlantsSouhaites.objects.filter(ilo_id_n=ilot_id)
+                plants.update(sts_id_n=3) 
+            form.save()
+            return redirect('liste_ilots_chantier', ilot.cs_id_n)
+    else:
+        form = TBIlotsForm(instance=ilot)
+
+    chantier=ilot.cs_id_n
+    types = TbEtat.objects.all()
+    return render(request, 'form_ilot.html', {'form': form, 'ilot': ilot, 'types': types,'chantier':chantier})
+
+def remplissage_Utilisateur(request):
+    v_users = VUtilisateur.objects.all()
+    for v_user in v_users:
+        user = AuthUser.objects.create_user(
+            username=v_user.username
+        )
+        TbUtilisateur.objects.create(
+            username=v_user.username,
+            role=v_user.role,
+            user_djan=user 
+        )
+    return render(request, 'remplissage.html', {'message': 'Remplissage terminé'})

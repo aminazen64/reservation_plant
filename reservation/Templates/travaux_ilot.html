@@ -1,0 +1,177 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Ajouter travaux îlot {{ ilot.ilo_id_n }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <style>
+        body {
+            background: #f4f6f8;
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 480px;
+            margin: 48px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(60, 72, 88, 0.12);
+            padding: 36px 32px 32px 32px;
+        }
+        h2 {
+            text-align: center;
+            color: #388e3c;
+            margin-bottom: 32px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        label {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #bdbdbd;
+            border-radius: 6px;
+            font-size: 15px;
+            background: #f9fbe7;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+            border-color: #388e3c;
+            outline: none;
+            background: #fff;
+        }
+        button[type="submit"] {
+            background-color: #388e3c;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 0;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        button[type="submit"]:hover {
+            background-color: #2e7d32;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 18px;
+            color: #388e3c;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .ilot-info {
+            background: #f1f8e9;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border-left: 4px solid #388e3c;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+   <div class="container">    
+        <a href="{% url 'liste_ilots_chantier' ilot.cs_id_n %}" class="back-link">← Retour à la liste des îlots</a>    
+  
+        <h2>Ajouter travaux îlot : {{ ilot.ilo_id_n|default_if_none:"-" }}</h2>    
+        <div class="ilot-info">    
+            <strong>Surface :</strong> {{ ilot.ilo_surface_n|default_if_none:"-" }}<br>    
+            <strong>% Non Plantable :</strong> {{ ilot.ilo_prc_nonplantable_n|default_if_none:"-" }}<br>    
+            <strong>Espace Entre-ligne :</strong> {{ ilot.ilo_espace_entreligne_n|default_if_none:"-" }}<br>    
+            <strong>Espace Sur-ligne :</strong> {{ ilot.ilo_espace_surligne_n|default_if_none:"-" }}    
+        </div>  
+  
+        <form method="post">  
+            {% csrf_token %}  
+            {{ travaux_form.non_field_errors }}  
+  
+            {% for field in travaux_form %}  
+            <div class="form-group">  
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>  
+                {{ field }}  
+                {% if field.errors %}  
+                <div class="error">{{ field.errors }}</div>  
+                {% endif %}  
+                {% if field.help_text %}  
+                <small class="help-text">{{ field.help_text }}</small>  
+                {% endif %}  
+            </div>  
+            {% endfor %}  
+  
+            <button type="submit">Enregistrer</button>  
+        </form>  
+    </div>
+    <script>
+        const getNiv4Url = "{% url 'get_niv4_by_niv3' %}";
+        const getNiv5Url = "{% url 'get_niv5_by_niv4' %}";
+        const getOpsUrl = "{% url 'get_ops_by_niv5' %}";
+
+        $(document).ready(function () {
+            $('select').select2({ width: '100%' });
+
+            $('#id_id_niv3_n').on('change', function () {
+                const niv3Id = $(this).val();
+                if (!niv3Id) return;
+
+                $.get(getNiv4Url, { niv3_id: niv3Id }, function (data) {
+                    $('#id_id_niv4_n').empty().append('<option value="">---------</option>');
+                    $('#id_id_niv5_n, #id_id_typeope_n').empty().append('<option value="">---------</option>');
+
+                    data.forEach(function (item) {
+                        $('#id_id_niv4_n').append(new Option(item.nv4_lib_a, item.nv4_codnv4_n));
+                    });
+
+                    $('#id_id_niv4_n').trigger('change');
+                });
+            });
+
+            $('#id_id_niv4_n').on('change', function () {
+                const niv4Id = $(this).val();
+                if (!niv4Id) return;
+
+                $.get(getNiv5Url, { niv4_id: niv4Id }, function (data) {
+                    $('#id_id_niv5_n').empty().append('<option value="">---------</option>');
+                    $('#id_id_typeope_n').empty().append('<option value="">---------</option>');
+
+                    data.forEach(function (item) {
+                        $('#id_id_niv5_n').append(new Option(item.nv5_lib_a, item.nv5_codnv5_n));
+                    });
+
+                    $('#id_id_niv5_n').trigger('change');
+                });
+            });
+
+            $('#id_id_niv5_n').on('change', function () {
+                const niv5Id = $(this).val();
+                if (!niv5Id) return;
+
+                $.get(getOpsUrl, { niv5_id: niv5Id }, function (data) {
+                    $('#id_id_typeope_n').empty().append('<option value="">---------</option>');
+                    data.forEach(function (item) {
+                        $('#id_id_typeope_n').append(new Option(item.typ_libope_a, item.typ_codope_n));
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
